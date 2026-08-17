@@ -1,0 +1,25 @@
+{
+  "name": "@sms/worker",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings 0"
+  },
+  "dependencies": {
+    "@sms/database": "workspace:*",
+    "@sms/shared": "workspace:*",
+    "bullmq": "^5.34.3",
+    "ioredis": "^5.4.2"
+  },
+  "devDependencies": {
+    "@sms/config": "workspace:*",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
