@@ -1,27 +1,32 @@
 'use client';
 
-import { useState } from 'react';
-import { api } from '@/lib/api';
-import type { AuthUser } from '@sms/shared';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Card, Field, Input } from '@/components/ui';
+import { homeFor, useAuth } from '@/lib/auth';
 
 export default function LoginPage() {
+  const { login, user, ready } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('superadmin@sms.local');
   const [password, setPassword] = useState('ChangeMe123!');
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Already signed in → bounce to the right place.
+  useEffect(() => {
+    if (ready && user) {
+      router.replace(user.mustChangePassword ? '/change-password' : homeFor(user.role));
+    }
+  }, [ready, user, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await api.login(email, password);
-      // Phase 0: stash tokens in localStorage. Real session handling
-      // (httpOnly cookies + refresh rotation) lands in a later phase.
-      localStorage.setItem('accessToken', res.accessToken);
-      localStorage.setItem('refreshToken', res.refreshToken);
-      setUser(res.user);
+      const u = await login(email, password);
+      router.replace(u.mustChangePassword ? '/change-password' : homeFor(u.role));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -31,50 +36,28 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+      <Card className="w-full max-w-sm">
         <h1 className="text-xl font-semibold">School Management System</h1>
         <p className="mt-1 text-sm text-slate-500">Sign in to your account</p>
 
-        {user ? (
-          <div className="mt-6 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800">
-            <p className="font-medium">Signed in ✓</p>
-            <p className="mt-1">
-              {user.name} — <span className="font-mono">{user.role}</span>
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} className="mt-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-                required
-              />
-            </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
-            >
-              {loading ? 'Signing in…' : 'Sign in'}
-            </button>
-          </form>
-        )}
-      </div>
+        <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          <Field label="Email">
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </Field>
+          <Field label="Password">
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </Field>
+          {error && <Alert>{error}</Alert>}
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? 'Signing in…' : 'Sign in'}
+          </Button>
+        </form>
+      </Card>
     </main>
   );
 }
