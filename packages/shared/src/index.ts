@@ -48,6 +48,14 @@ export const TENANT_ROLES: readonly Role[] = [
   Role.PARENT,
 ];
 
+/** Roles a school Admin is permitted to create (never SUPER_ADMIN). */
+export const ADMIN_ASSIGNABLE_ROLES: readonly Role[] = [
+  Role.ADMIN,
+  Role.TEACHER,
+  Role.STUDENT,
+  Role.PARENT,
+];
+
 export function isPlatformRole(role: Role): boolean {
   return PLATFORM_ROLES.includes(role);
 }
@@ -69,4 +77,5 @@ export interface AuthUser {
   schoolId: string | null;
   email: string;
   name: string;
+  mustChangePassword: boolean;
 }

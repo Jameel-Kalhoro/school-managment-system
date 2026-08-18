@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Role, UserStatus, type AuthUser, type JwtPayload } from '@sms/shared';
 import type { User } from '@sms/database';
-import * as bcrypt from 'bcrypt';
+import { comparePassword, hashPassword } from '../common/password.util';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface TokenPair {
@@ -25,7 +25,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const ok = await bcrypt.compare(password, user.passwordHash);
+    const ok = await comparePassword(password, user.passwordHash);
     if (!ok) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -55,7 +55,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const matches = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
+    const matches = await comparePassword(refreshToken, user.hashedRefreshToken);
     if (!matches) {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -70,6 +70,36 @@ export class AuthService {
     await this.prisma.user.updateMany({
       where: { id: userId },
       data: { hashedRefreshToken: null },
+    });
+  }
+
+  /**
+   * Changes the caller's own password. Verifies the current password, stores
+   * the new hash, clears the must-change flag, and revokes any active refresh
+   * token so other sessions must re-authenticate.
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.prisma.user.findFirst({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const ok = await comparePassword(currentPassword, user.passwordHash);
+    if (!ok) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    await this.prisma.user.updateMany({
+      where: { id: userId },
+      data: {
+        passwordHash: await hashPassword(newPassword),
+        mustChangePassword: false,
+        hashedRefreshToken: null,
+      },
     });
   }
 
@@ -96,7 +126,7 @@ export class AuthService {
   }
 
   private async persistRefreshToken(userId: string, refreshToken: string): Promise<void> {
-    const hashed = await bcrypt.hash(refreshToken, 12);
+    const hashed = await hashPassword(refreshToken);
     await this.prisma.user.updateMany({
       where: { id: userId },
       data: { hashedRefreshToken: hashed },
@@ -110,6 +140,7 @@ export class AuthService {
       schoolId: user.schoolId,
       email: user.email,
       name: user.name,
+      mustChangePassword: user.mustChangePassword,
     };
   }
 }

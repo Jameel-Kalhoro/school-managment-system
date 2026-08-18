@@ -8,7 +8,7 @@ export * from '@prisma/client';
  * school's id on reads/writes (see apps/api PrismaService). As academic
  * models are added in later phases, register them here.
  */
-export const TENANT_MODELS: readonly string[] = ['User'];
+export const TENANT_MODELS: readonly string[] = ['User', 'AcademicYear'];
 
 /**
  * Lazily-instantiated singleton — avoids exhausting DB connections during

@@ -4,8 +4,10 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "types": ["node", "jest"],
-    "incremental": true
+    "incremental": true,
+    "declaration": false,
+    "declarationMap": false
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "test"]
+  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.e2e-spec.ts"]
 }

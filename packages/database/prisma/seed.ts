@@ -1,4 +1,4 @@
-import { PrismaClient, Role, UserStatus } from '@prisma/client';
+import { PrismaClient, Role, SubscriptionStatus, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -37,9 +37,34 @@ async function main() {
     },
   });
 
+  // A demo school + admin so the app is immediately explorable.
+  const demoAdminPassword = 'Admin123!';
+  const demoSchool = await prisma.school.upsert({
+    where: { slug: 'demo' },
+    update: {},
+    create: {
+      name: 'Demo School',
+      slug: 'demo',
+      city: 'Lahore',
+      subscription: {
+        create: { planId: plan.id, status: SubscriptionStatus.TRIALING },
+      },
+      users: {
+        create: {
+          name: 'Demo Admin',
+          email: 'admin@demo.sms.local',
+          role: Role.ADMIN,
+          status: UserStatus.ACTIVE,
+          passwordHash: await bcrypt.hash(demoAdminPassword, 12),
+        },
+      },
+    },
+  });
+
   console.log('✔ Seed complete');
   console.log(`  Super admin: ${superAdmin.email} (password: ${password})`);
   console.log(`  Default plan: ${plan.name} — PKR ${plan.pricePkr}/mo`);
+  console.log(`  Demo school: ${demoSchool.name} — admin@demo.sms.local (password: ${demoAdminPassword})`);
 }
 
 main()

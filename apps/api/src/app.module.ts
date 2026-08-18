@@ -5,6 +5,8 @@ import { ClsModule } from 'nestjs-cls';
 import { configuration, validateEnv } from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { PlatformModule } from './platform/platform.module';
+import { SchoolModule } from './school/school.module';
 import { UsersModule } from './users/users.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -28,6 +30,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     }),
     PrismaModule,
     AuthModule,
+    PlatformModule,
+    SchoolModule,
     UsersModule,
     HealthModule,
   ],

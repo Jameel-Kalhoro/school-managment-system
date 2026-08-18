@@ -54,23 +54,43 @@ Default super admin (from `.env`): `superadmin@sms.local` / `ChangeMe123!`
 | `pnpm db:studio` | open Prisma Studio |
 | `make build` / `make lint` / `make test` | monorepo build / lint / test |
 
+## Phase 1 API (Platform & Tenancy)
+
+Super Admin (`@Roles(SUPER_ADMIN)`):
+- `POST/GET/PATCH /platform/plans`, `PATCH /platform/plans/:id/status` — subscription plans
+- `POST /platform/schools` — onboard (school + subscription + first Admin, returns temp password)
+- `GET/PATCH /platform/schools/:id`, `PATCH /platform/schools/:id/status`
+
+School Admin (`@Roles(ADMIN)`, tenant-scoped):
+- `GET/PATCH /school` — own school settings
+- `POST/GET/PATCH/DELETE /school/academic-years`, `PATCH .../:id/set-current`
+- `POST/GET/PATCH /users`, `PATCH /users/:id/status` — manage ADMIN/TEACHER/STUDENT/PARENT
+
+Any authenticated user:
+- `PATCH /auth/password` — change own password (clears the must-change flag)
+
 ## Manual smoke test
 
+Quick check:
 ```bash
-# health
 curl localhost:4000/api/health
-
-# login
 curl -sX POST localhost:4000/api/auth/login \
   -H 'content-type: application/json' \
   -d '{"email":"superadmin@sms.local","password":"ChangeMe123!"}'
+```
 
-# use the accessToken from above
-curl localhost:4000/api/auth/me -H "Authorization: Bearer <accessToken>"
+Full Phase 1 flow (onboarding → temp-password login → users → academic years →
+tenant-isolation & role-guard checks), against a running API:
+```bash
+node apps/api/test/phase1.smoke.mjs
 ```
 
 ## Status
 
-Phase 0 (foundation) — monorepo, auth (login/refresh/logout/me), RBAC, multi-tenant
-Prisma scoping, seed, containerized services, CI. EasyPaisa billing is deferred to a
-later phase per plan.
+- **Phase 0 (foundation)** — monorepo, auth (login/refresh/logout/me), RBAC, multi-tenant
+  Prisma scoping, seed, containerized services, CI.
+- **Phase 1 (platform & tenancy)** — school onboarding, subscription plans, school
+  settings, academic years, user management, temp passwords + change-password. Verified
+  end-to-end (25/25 smoke checks) with tenant isolation.
+
+EasyPaisa billing is deferred to a later phase per plan.
