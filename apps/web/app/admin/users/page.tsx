@@ -10,6 +10,7 @@ import {
   Field,
   Input,
   PageHeader,
+  SecretField,
   Select,
   Spinner,
 } from '@/components/ui';
@@ -38,8 +39,12 @@ export default function UsersPage() {
       {created && (
         <Card className="mb-4 border-emerald-200">
           <Alert tone="success">
-            Created <strong>{created.user.name}</strong> ({created.user.role}). One-time password:
-            <span className="ml-1 font-mono text-xs">{created.tempPassword}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span>
+                Created <strong>{created.user.name}</strong> ({created.user.role}). One-time password:
+              </span>
+              <SecretField value={created.tempPassword} />
+            </div>
           </Alert>
         </Card>
       )}

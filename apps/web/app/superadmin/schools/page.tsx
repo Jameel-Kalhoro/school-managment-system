@@ -9,6 +9,7 @@ import {
   Field,
   Input,
   PageHeader,
+  SecretField,
   Select,
   Spinner,
 } from '@/components/ui';
@@ -39,8 +40,9 @@ export default function SchoolsPage() {
           <Alert tone="success">
             <strong>{result.school.name}</strong> onboarded. Share these one-time credentials
             with the admin:
-            <div className="mt-2 font-mono text-xs">
-              {result.admin.email} / {result.tempPassword}
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-mono">{result.admin.email}</span>
+              <SecretField value={result.tempPassword} />
             </div>
           </Alert>
         </Card>

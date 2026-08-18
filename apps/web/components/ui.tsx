@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
 
 export function Button({
@@ -91,4 +92,88 @@ export function Alert({ tone = 'error', children }: { tone?: 'error' | 'success'
 
 export function Spinner() {
   return <div className="text-sm text-slate-400">Loading…</div>;
+}
+
+function EyeIcon({ off }: { off?: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {off ? (
+        <>
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+          <line x1="1" y1="1" x2="23" y2="23" />
+        </>
+      ) : (
+        <>
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+/** Password input with a show/hide eye toggle. Drop-in for <Input type="password">. */
+export function PasswordInput({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? 'text' : 'password'}
+        className={`w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm focus:border-slate-500 focus:outline-none ${className}`}
+        {...props}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
+        aria-label={show ? 'Hide password' : 'Show password'}
+        tabIndex={-1}
+      >
+        <EyeIcon off={show} />
+      </button>
+    </div>
+  );
+}
+
+/** Copies a value to the clipboard, showing brief "Copied" feedback. */
+export function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch {
+          /* clipboard unavailable */
+        }
+      }}
+      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+    >
+      {copied ? 'Copied ✓' : 'Copy'}
+    </button>
+  );
+}
+
+/** Masked display of a secret (e.g. a temp password) with reveal + copy. */
+export function SecretField({ value }: { value: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span className="inline-flex items-center gap-2">
+      <code className="rounded bg-white px-2 py-1 font-mono text-xs text-slate-900">
+        {show ? value : '•'.repeat(Math.max(value.length, 8))}
+      </code>
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="text-slate-400 hover:text-slate-600"
+        aria-label={show ? 'Hide' : 'Show'}
+      >
+        <EyeIcon off={show} />
+      </button>
+      <CopyButton value={value} />
+    </span>
+  );
 }
