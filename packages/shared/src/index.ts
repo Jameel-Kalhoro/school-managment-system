@@ -37,6 +37,24 @@ export enum BillingPeriod {
   MONTHLY = 'MONTHLY',
 }
 
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
+
+export enum StudentStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  GRADUATED = 'GRADUATED',
+  WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum TeacherStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
+
 /** Roles that operate at the platform level (no school scope). */
 export const PLATFORM_ROLES: readonly Role[] = [Role.SUPER_ADMIN];
 

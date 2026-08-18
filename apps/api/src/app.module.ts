@@ -8,6 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { PlatformModule } from './platform/platform.module';
 import { SchoolModule } from './school/school.module';
 import { UsersModule } from './users/users.module';
+import { SubjectsModule } from './academics/subjects/subjects.module';
+import { TeachersModule } from './academics/teachers/teachers.module';
+import { ClassesModule } from './academics/classes/classes.module';
+import { StudentsModule } from './academics/students/students.module';
+import { TeacherPortalModule } from './academics/teacher-portal/teacher-portal.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -33,6 +38,11 @@ import { RolesGuard } from './common/guards/roles.guard';
     PlatformModule,
     SchoolModule,
     UsersModule,
+    SubjectsModule,
+    TeachersModule,
+    ClassesModule,
+    StudentsModule,
+    TeacherPortalModule,
     HealthModule,
   ],
   providers: [

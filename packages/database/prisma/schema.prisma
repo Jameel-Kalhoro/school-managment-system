@@ -46,6 +46,24 @@ enum BillingPeriod {
   MONTHLY
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  WITHDRAWN
+}
+
+enum TeacherStatus {
+  ACTIVE
+  INACTIVE
+}
+
 // ─── Tenancy / platform ──────────────────────────────────────
 
 model School {
@@ -61,6 +79,11 @@ model School {
   users         User[]
   subscription  Subscription?
   academicYears AcademicYear[]
+  subjects      Subject[]
+  classes       SchoolClass[]
+  teachers      Teacher[]
+  students      Student[]
+  classSubjects ClassSubject[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,6 +99,8 @@ model AcademicYear {
   startDate DateTime
   endDate   DateTime
   isCurrent Boolean  @default(false)
+
+  classes SchoolClass[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +126,10 @@ model User {
   // hashed refresh token for rotation (null when logged out)
   hashedRefreshToken String?
   lastLoginAt        DateTime?
+
+  // optional academic-profile links (a login can back a teacher or a student)
+  teacher Teacher?
+  student Student?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -142,4 +171,111 @@ model Subscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Academics — structure (Phase 2a) ────────────────────────
+
+model Subject {
+  id       String  @id @default(cuid())
+  schoolId String
+  school   School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name     String
+  code     String?
+
+  classSubjects ClassSubject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, code])
+  @@index([schoolId])
+}
+
+model Teacher {
+  id            String        @id @default(cuid())
+  schoolId      String
+  school        School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  // the login account backing this teacher (role TEACHER)
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  qualification String?
+  phone         String?
+  joinedAt      DateTime?
+  status        TeacherStatus @default(ACTIVE)
+
+  classTeacherOf SchoolClass[]  @relation("ClassTeacher")
+  classSubjects  ClassSubject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model SchoolClass {
+  id             String   @id @default(cuid())
+  schoolId       String
+  school         School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  name           String // e.g. "Grade 5"
+  section        String? // e.g. "A"
+  classTeacherId String?
+  classTeacher   Teacher? @relation("ClassTeacher", fields: [classTeacherId], references: [id], onDelete: SetNull)
+
+  students      Student[]
+  classSubjects ClassSubject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, academicYearId, name, section])
+  @@index([schoolId])
+  @@index([academicYearId])
+}
+
+model Student {
+  id            String        @id @default(cuid())
+  schoolId      String
+  school        School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  // optional login — stays null until the Phase 5 student/parent portal
+  userId        String?       @unique
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  rollNo        String
+  name          String
+  gender        Gender?
+  dob           DateTime?
+  guardianName  String?
+  guardianPhone String?
+  classId       String?
+  class         SchoolClass?  @relation(fields: [classId], references: [id], onDelete: SetNull)
+  admissionDate DateTime?
+  status        StudentStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, rollNo])
+  @@index([schoolId])
+  @@index([classId])
+}
+
+// Which teacher teaches which subject in which class.
+model ClassSubject {
+  id        String      @id @default(cuid())
+  schoolId  String
+  school    School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId   String
+  class     SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacherId String?
+  teacher   Teacher?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([classId, subjectId])
+  @@index([schoolId])
+  @@index([classId])
 }
