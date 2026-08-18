@@ -233,4 +233,8 @@ export const teacherPortalApi = {
   myClasses: () => apiFetch<SchoolClass[]>('/teacher/classes'),
   classRoster: (classId: string) =>
     apiFetch<Student[]>(`/teacher/classes/${classId}/students`),
+  addStudent: (
+    classId: string,
+    body: { rollNo: string; name: string; gender?: string; guardianName?: string; guardianPhone?: string },
+  ) => apiFetch<Student>(`/teacher/classes/${classId}/students`, { method: 'POST', body }),
 };

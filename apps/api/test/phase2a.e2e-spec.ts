@@ -169,6 +169,26 @@ describe('Phase 2a — Academics structure (e2e)', () => {
       .set(auth(teacherToken))
       .expect(403);
 
+    // Teacher can add a student to their OWN class...
+    await request(http)
+      .post(`/api/teacher/classes/${ctx.classId}/students`)
+      .set(auth(teacherToken))
+      .send({ rollNo: '002', name: 'Added ByTeacher' })
+      .expect(201);
+    const roster2 = await request(http)
+      .get(`/api/teacher/classes/${ctx.classId}/students`)
+      .set(auth(teacherToken))
+      .expect(200);
+    expect(roster2.body).toHaveLength(2);
+    expect(roster2.body.map((s: { rollNo: string }) => s.rollNo)).toContain('002');
+
+    // ...but NOT to a class they don't teach.
+    await request(http)
+      .post(`/api/teacher/classes/${other.body.id}/students`)
+      .set(auth(teacherToken))
+      .send({ rollNo: '003', name: 'Nope' })
+      .expect(403);
+
     // Teacher cannot create classes (Admin-only).
     await request(http)
       .post('/api/classes')
