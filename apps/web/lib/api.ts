@@ -1,12 +1,18 @@
 import type { AuthUser, Role, UserStatus } from '@sms/shared';
 import type {
   AcademicYear,
+  ClassSubject,
+  CreateTeacherResult,
   CreateUserResult,
   ManagedUser,
   OnboardResult,
   Paginated,
   Plan,
   School,
+  SchoolClass,
+  Student,
+  Subject,
+  Teacher,
 } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
@@ -172,4 +178,59 @@ export const usersApi = {
     apiFetch<CreateUserResult>('/users', { method: 'POST', body }),
   setStatus: (id: string, status: UserStatus) =>
     apiFetch<ManagedUser>(`/users/${id}/status`, { method: 'PATCH', body: { status } }),
+};
+
+export const subjectsApi = {
+  list: (search?: string) =>
+    apiFetch<Paginated<Subject>>('/subjects', { query: { search, pageSize: 100 } }),
+  create: (body: { name: string; code?: string }) =>
+    apiFetch<Subject>('/subjects', { method: 'POST', body }),
+  remove: (id: string) => apiFetch<void>(`/subjects/${id}`, { method: 'DELETE' }),
+};
+
+export const teachersApi = {
+  list: (search?: string) =>
+    apiFetch<Paginated<Teacher>>('/teachers', { query: { search, pageSize: 100 } }),
+  create: (body: { name: string; email: string; phone?: string; qualification?: string }) =>
+    apiFetch<CreateTeacherResult>('/teachers', { method: 'POST', body }),
+  setStatus: (id: string, status: 'ACTIVE' | 'INACTIVE') =>
+    apiFetch<Teacher>(`/teachers/${id}/status`, { method: 'PATCH', body: { status } }),
+};
+
+export const classesApi = {
+  list: (academicYearId?: string) =>
+    apiFetch<Paginated<SchoolClass>>('/classes', { query: { academicYearId, pageSize: 100 } }),
+  get: (id: string) => apiFetch<SchoolClass>(`/classes/${id}`),
+  create: (body: { academicYearId: string; name: string; section?: string }) =>
+    apiFetch<SchoolClass>('/classes', { method: 'POST', body }),
+  remove: (id: string) => apiFetch<void>(`/classes/${id}`, { method: 'DELETE' }),
+  setClassTeacher: (id: string, teacherId: string | null) =>
+    apiFetch<SchoolClass>(`/classes/${id}/class-teacher`, { method: 'PATCH', body: { teacherId } }),
+  listSubjects: (id: string) => apiFetch<ClassSubject[]>(`/classes/${id}/subjects`),
+  addSubject: (id: string, body: { subjectId: string; teacherId?: string | null }) =>
+    apiFetch<ClassSubject>(`/classes/${id}/subjects`, { method: 'POST', body }),
+  removeSubject: (id: string, classSubjectId: string) =>
+    apiFetch<void>(`/classes/${id}/subjects/${classSubjectId}`, { method: 'DELETE' }),
+};
+
+export const studentsApi = {
+  list: (params: { classId?: string; search?: string } = {}) =>
+    apiFetch<Paginated<Student>>('/students', { query: { ...params, pageSize: 100 } }),
+  create: (body: {
+    rollNo: string;
+    name: string;
+    gender?: string;
+    guardianName?: string;
+    guardianPhone?: string;
+    classId?: string;
+  }) => apiFetch<Student>('/students', { method: 'POST', body }),
+  assignClass: (id: string, classId: string | null) =>
+    apiFetch<Student>(`/students/${id}/class`, { method: 'PATCH', body: { classId } }),
+  remove: (id: string) => apiFetch<void>(`/students/${id}`, { method: 'DELETE' }),
+};
+
+export const teacherPortalApi = {
+  myClasses: () => apiFetch<SchoolClass[]>('/teacher/classes'),
+  classRoster: (classId: string) =>
+    apiFetch<Student[]>(`/teacher/classes/${classId}/students`),
 };

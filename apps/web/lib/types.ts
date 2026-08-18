@@ -69,3 +69,65 @@ export interface CreateUserResult {
   user: ManagedUser;
   tempPassword: string;
 }
+
+// ─── Academics (Phase 2a) ───────────────────────────────────
+
+export interface Subject {
+  id: string;
+  name: string;
+  code: string | null;
+}
+
+export interface TeacherUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: string;
+}
+
+export interface Teacher {
+  id: string;
+  qualification: string | null;
+  phone: string | null;
+  joinedAt: string | null;
+  status: string;
+  user: TeacherUser;
+}
+
+export interface CreateTeacherResult {
+  teacher: Teacher;
+  tempPassword: string;
+}
+
+export interface ClassSubject {
+  id: string;
+  subject: Subject;
+  teacher: { id: string; user: { id: string; name: string; email: string } } | null;
+}
+
+export interface SchoolClass {
+  id: string;
+  name: string;
+  section: string | null;
+  academicYearId: string;
+  academicYear?: { id: string; name: string; isCurrent: boolean };
+  classTeacherId: string | null;
+  classTeacher?: { id: string; user: { id: string; name: string; email: string } } | null;
+  classSubjects?: ClassSubject[];
+  _count?: { students: number; classSubjects: number };
+}
+
+export interface Student {
+  id: string;
+  rollNo: string;
+  name: string;
+  gender: string | null;
+  dob: string | null;
+  guardianName: string | null;
+  guardianPhone: string | null;
+  classId: string | null;
+  class?: { id: string; name: string; section: string | null } | null;
+  status: string;
+}
+
