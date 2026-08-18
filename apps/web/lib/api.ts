@@ -143,6 +143,8 @@ export const platformApi = {
   }) => apiFetch<OnboardResult>('/platform/schools', { method: 'POST', body }),
   setSchoolStatus: (id: string, status: string) =>
     apiFetch<School>(`/platform/schools/${id}/status`, { method: 'PATCH', body: { status } }),
+  deleteSchool: (id: string) =>
+    apiFetch<void>(`/platform/schools/${id}`, { method: 'DELETE' }),
 };
 
 export const schoolApi = {

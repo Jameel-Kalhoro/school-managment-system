@@ -128,6 +128,30 @@ export class SchoolsService {
     return this.prisma.school.update({ where: { id }, data: { status } });
   }
 
+  /**
+   * Permanently deletes a school and all its data. Only allowed once the school
+   * is SUSPENDED or CANCELLED (guards against wiping an active school). Classes
+   * and their mappings are removed first so the School cascade doesn't hit the
+   * Restrict FK from SchoolClass -> AcademicYear.
+   */
+  async remove(id: string) {
+    const school = await this.findOne(id);
+    if (
+      school.status !== SchoolStatus.SUSPENDED &&
+      school.status !== SchoolStatus.CANCELLED
+    ) {
+      throw new ConflictException('Suspend or cancel the school before deleting it');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.classSubject.deleteMany({ where: { schoolId: id } }),
+      this.prisma.schoolClass.deleteMany({ where: { schoolId: id } }),
+      this.prisma.school.delete({ where: { id } }),
+    ]);
+
+    return { id, deleted: true };
+  }
+
   private mapKnownError(err: unknown): Error {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const target = (err.meta?.target as string[] | undefined)?.join(', ') ?? 'field';

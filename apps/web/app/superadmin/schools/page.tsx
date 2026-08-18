@@ -14,13 +14,14 @@ import {
 } from '@/components/ui';
 import { platformApi } from '@/lib/api';
 import { useAsync } from '@/lib/use-async';
-import type { OnboardResult } from '@/lib/types';
+import type { OnboardResult, School } from '@/lib/types';
 
 export default function SchoolsPage() {
   const schools = useAsync(() => platformApi.listSchools());
   const plans = useAsync(() => platformApi.listPlans());
   const [showForm, setShowForm] = useState(false);
   const [result, setResult] = useState<OnboardResult | null>(null);
+  const [confirmSchool, setConfirmSchool] = useState<School | null>(null);
 
   return (
     <div>
@@ -83,27 +84,34 @@ export default function SchoolsPage() {
                   <Td>{s._count?.users ?? 0}</Td>
                   <Td><Badge>{s.status}</Badge></Td>
                   <Td>
-                    {s.status === 'ACTIVE' ? (
-                      <Button
-                        variant="danger"
-                        onClick={async () => {
-                          await platformApi.setSchoolStatus(s.id, 'SUSPENDED');
-                          schools.reload();
-                        }}
-                      >
-                        Suspend
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        onClick={async () => {
-                          await platformApi.setSchoolStatus(s.id, 'ACTIVE');
-                          schools.reload();
-                        }}
-                      >
-                        Reactivate
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {s.status === 'ACTIVE' ? (
+                        <Button
+                          variant="danger"
+                          onClick={async () => {
+                            await platformApi.setSchoolStatus(s.id, 'SUSPENDED');
+                            schools.reload();
+                          }}
+                        >
+                          Suspend
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            variant="ghost"
+                            onClick={async () => {
+                              await platformApi.setSchoolStatus(s.id, 'ACTIVE');
+                              schools.reload();
+                            }}
+                          >
+                            Reactivate
+                          </Button>
+                          <Button variant="danger" onClick={() => setConfirmSchool(s)}>
+                            Delete
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </Td>
                 </tr>
               ))}
@@ -118,6 +126,76 @@ export default function SchoolsPage() {
           </table>
         </Card>
       )}
+
+      {confirmSchool && (
+        <DeleteSchoolDialog
+          school={confirmSchool}
+          onClose={() => setConfirmSchool(null)}
+          onDeleted={() => {
+            setConfirmSchool(null);
+            schools.reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function DeleteSchoolDialog({
+  school,
+  onClose,
+  onDeleted,
+}: {
+  school: School;
+  onClose: () => void;
+  onDeleted: () => void;
+}) {
+  const [text, setText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const confirmed = text === school.slug;
+
+  async function onDelete() {
+    setLoading(true);
+    setError(null);
+    try {
+      await platformApi.deleteSchool(school.id);
+      onDeleted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <Card className="w-full max-w-md">
+        <h2 className="text-lg font-semibold text-red-700">Delete {school.name}?</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          This permanently removes the school and <strong>all</strong> its data — users,
+          teachers, students, classes, subjects, academic years, and its subscription.
+          This cannot be undone.
+        </p>
+        <p className="mt-3 text-sm text-slate-600">
+          Type <span className="font-mono font-medium">{school.slug}</span> to confirm:
+        </p>
+        <Input
+          className="mt-1"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={school.slug}
+        />
+        {error && <div className="mt-3"><Alert>{error}</Alert></div>}
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={onDelete} disabled={!confirmed || loading}>
+            {loading ? 'Deleting…' : 'Delete permanently'}
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }

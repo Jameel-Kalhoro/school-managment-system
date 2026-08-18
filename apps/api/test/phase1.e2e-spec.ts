@@ -180,4 +180,41 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
     await request(http).get('/api/platform/schools').set(auth(alphaToken)).expect(403);
     await request(http).get('/api/platform/schools').expect(401);
   });
+
+  it('deletes a school (guarded by status + cascades data)', async () => {
+    const created = await request(http)
+      .post('/api/platform/schools')
+      .set(auth(superToken))
+      .send({
+        school: { name: 'E2E DeleteMe', slug: `e2e-del-${run}` },
+        admin: { name: 'Del Admin', email: `del-${run}@test.local` },
+        planId,
+      })
+      .expect(201);
+    const schoolId = created.body.school.id as string;
+
+    // Active school cannot be deleted.
+    await request(http)
+      .delete(`/api/platform/schools/${schoolId}`)
+      .set(auth(superToken))
+      .expect(409);
+
+    // Suspend, then delete succeeds.
+    await request(http)
+      .patch(`/api/platform/schools/${schoolId}/status`)
+      .set(auth(superToken))
+      .send({ status: 'SUSPENDED' })
+      .expect(200);
+    await request(http)
+      .delete(`/api/platform/schools/${schoolId}`)
+      .set(auth(superToken))
+      .expect(200);
+
+    // Gone, and its users were cascade-deleted.
+    await request(http)
+      .get(`/api/platform/schools/${schoolId}`)
+      .set(auth(superToken))
+      .expect(404);
+    expect(await prisma.user.count({ where: { schoolId } })).toBe(0);
+  });
 });

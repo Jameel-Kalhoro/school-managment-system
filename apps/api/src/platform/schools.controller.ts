@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -46,5 +47,10 @@ export class SchoolsController {
   @Patch(':id/status')
   setStatus(@Param('id') id: string, @Body() dto: ChangeSchoolStatusDto) {
     return this.schools.setStatus(id, dto.status);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.schools.remove(id);
   }
 }
