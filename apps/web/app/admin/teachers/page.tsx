@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Alert, Badge, Button, Card, Field, Input, PageHeader, Spinner } from '@/components/ui';
+import { Alert, Badge, Button, Card, Field, Input, PageHeader, SecretField, Spinner } from '@/components/ui';
 import { teachersApi } from '@/lib/api';
 import type { CreateTeacherResult } from '@/lib/types';
 import { useAsync } from '@/lib/use-async';
@@ -25,9 +25,11 @@ export default function TeachersPage() {
       {created && (
         <Card className="mb-4 border-emerald-200">
           <Alert tone="success">
-            Created <strong>{created.teacher.user.name}</strong>. One-time password:
-            <span className="ml-1 font-mono text-xs">{created.tempPassword}</span> — they can
-            log in and will be asked to change it.
+            <div className="flex flex-wrap items-center gap-2">
+              <span>Created <strong>{created.teacher.user.name}</strong>. One-time password:</span>
+              <SecretField value={created.tempPassword} />
+              <span>— they can log in and will be asked to change it.</span>
+            </div>
           </Alert>
         </Card>
       )}

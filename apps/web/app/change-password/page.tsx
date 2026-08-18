@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Field, Input } from '@/components/ui';
+import { Alert, Button, Card, Field, PasswordInput } from '@/components/ui';
 import { authApi, loadSession, saveSession } from '@/lib/api';
 import { homeFor, useAuth } from '@/lib/auth';
 
@@ -58,27 +58,27 @@ export default function ChangePasswordPage() {
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <Field label="Current password">
-            <Input
-              type="password"
+            <PasswordInput
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
+              autoComplete="current-password"
               required
             />
           </Field>
           <Field label="New password">
-            <Input
-              type="password"
+            <PasswordInput
               value={next}
               onChange={(e) => setNext(e.target.value)}
+              autoComplete="new-password"
               minLength={8}
               required
             />
           </Field>
           <Field label="Confirm new password">
-            <Input
-              type="password"
+            <PasswordInput
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
+              autoComplete="new-password"
               minLength={8}
               required
             />

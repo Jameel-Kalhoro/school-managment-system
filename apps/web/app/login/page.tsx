@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Card, Field, Input } from '@/components/ui';
+import { Alert, Button, Card, Field, Input, PasswordInput } from '@/components/ui';
 import { homeFor, useAuth } from '@/lib/auth';
 
 export default function LoginPage() {
@@ -45,10 +45,10 @@ export default function LoginPage() {
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </Field>
           <Field label="Password">
-            <Input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
             />
           </Field>
