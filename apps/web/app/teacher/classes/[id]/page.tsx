@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Alert, Badge, Card, PageHeader, Spinner } from '@/components/ui';
+import { useState } from 'react';
+import { Alert, Badge, Button, Card, Field, Input, PageHeader, Select, Spinner } from '@/components/ui';
 import { teacherPortalApi } from '@/lib/api';
 import { useAsync } from '@/lib/use-async';
 
@@ -10,13 +11,21 @@ export default function TeacherRosterPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const roster = useAsync(() => teacherPortalApi.classRoster(id), [id]);
+  const [showForm, setShowForm] = useState(false);
 
   return (
     <div>
       <div className="mb-2">
         <Link href="/teacher" className="text-sm text-slate-500 underline">← My Classes</Link>
       </div>
-      <PageHeader title="Class Roster" />
+      <PageHeader
+        title="Class Roster"
+        action={<Button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Close' : 'Add student'}</Button>}
+      />
+
+      {showForm && (
+        <AddStudentForm classId={id} onDone={() => { setShowForm(false); roster.reload(); }} />
+      )}
 
       {roster.loading ? (
         <Spinner />
@@ -50,5 +59,65 @@ export default function TeacherRosterPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+function AddStudentForm({ classId, onDone }: { classId: string; onDone: () => void }) {
+  const [form, setForm] = useState({ rollNo: '', name: '', gender: '', guardianName: '', guardianPhone: '' });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await teacherPortalApi.addStudent(classId, {
+        rollNo: form.rollNo,
+        name: form.name,
+        gender: form.gender || undefined,
+        guardianName: form.guardianName || undefined,
+        guardianPhone: form.guardianPhone || undefined,
+      });
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add student');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card className="mb-4">
+      <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Roll No">
+          <Input value={form.rollNo} onChange={set('rollNo')} required />
+        </Field>
+        <Field label="Name">
+          <Input value={form.name} onChange={set('name')} required />
+        </Field>
+        <Field label="Gender (optional)">
+          <Select value={form.gender} onChange={set('gender')}>
+            <option value="">—</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </Select>
+        </Field>
+        <div className="hidden sm:block" />
+        <Field label="Guardian name (optional)">
+          <Input value={form.guardianName} onChange={set('guardianName')} />
+        </Field>
+        <Field label="Guardian phone (optional)">
+          <Input value={form.guardianPhone} onChange={set('guardianPhone')} />
+        </Field>
+        {error && <div className="sm:col-span-2"><Alert>{error}</Alert></div>}
+        <div className="sm:col-span-2">
+          <Button type="submit" disabled={loading}>{loading ? 'Adding…' : 'Add student'}</Button>
+        </div>
+      </form>
+    </Card>
   );
 }
