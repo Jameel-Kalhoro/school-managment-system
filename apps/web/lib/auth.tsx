@@ -26,6 +26,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function homeFor(role: Role): string {
   if (role === Role.SUPER_ADMIN) return '/superadmin';
   if (role === Role.ADMIN) return '/admin';
+  if (role === Role.TEACHER) return '/teacher';
   return '/login'; // student/parent portal — Phase 5
 }
 

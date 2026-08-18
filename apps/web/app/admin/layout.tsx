@@ -7,6 +7,10 @@ import { useRequireRole } from '@/lib/auth';
 
 const nav = [
   { href: '/admin', label: 'Overview' },
+  { href: '/admin/teachers', label: 'Teachers' },
+  { href: '/admin/classes', label: 'Classes' },
+  { href: '/admin/subjects', label: 'Subjects' },
+  { href: '/admin/students', label: 'Students' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/academic-years', label: 'Academic Years' },
   { href: '/admin/settings', label: 'School Settings' },
