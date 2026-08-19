@@ -18,7 +18,7 @@ import { loadSession, usersApi } from '@/lib/api';
 import type { CreateUserResult } from '@/lib/types';
 import { useAsync } from '@/lib/use-async';
 
-const ASSIGNABLE: Role[] = [Role.ADMIN, Role.TEACHER, Role.STUDENT, Role.PARENT];
+const ASSIGNABLE: Role[] = [Role.ADMIN, Role.TEACHER, Role.PARENT];
 
 export default function UsersPage() {
   const users = useAsync(() => usersApi.list());

@@ -8,7 +8,6 @@ export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   TEACHER = 'TEACHER',
-  STUDENT = 'STUDENT',
   PARENT = 'PARENT',
 }
 
@@ -76,7 +75,6 @@ export const PLATFORM_ROLES: readonly Role[] = [Role.SUPER_ADMIN];
 export const TENANT_ROLES: readonly Role[] = [
   Role.ADMIN,
   Role.TEACHER,
-  Role.STUDENT,
   Role.PARENT,
 ];
 
@@ -84,7 +82,6 @@ export const TENANT_ROLES: readonly Role[] = [
 export const ADMIN_ASSIGNABLE_ROLES: readonly Role[] = [
   Role.ADMIN,
   Role.TEACHER,
-  Role.STUDENT,
   Role.PARENT,
 ];
 

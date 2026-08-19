@@ -128,6 +128,12 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
       .set(auth(alphaToken))
       .send({ name: 'Nope', email: `x-${run}@test.local`, role: 'SUPER_ADMIN' })
       .expect(403);
+    // STUDENT is no longer a role — students have no login, only parents do.
+    await request(http)
+      .post('/api/users')
+      .set(auth(alphaToken))
+      .send({ name: 'Kid', email: `kid-${run}@test.local`, role: 'STUDENT' })
+      .expect(400);
   });
 
   it('lists only its own school users (admin + teacher)', async () => {

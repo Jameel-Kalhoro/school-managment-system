@@ -17,7 +17,6 @@ enum Role {
   SUPER_ADMIN
   ADMIN
   TEACHER
-  STUDENT
   PARENT
 }
 
@@ -145,9 +144,8 @@ model User {
   hashedRefreshToken String?
   lastLoginAt        DateTime?
 
-  // optional academic-profile links (a login can back a teacher or a student)
+  // optional academic-profile link (a login can back a teacher)
   teacher Teacher?
-  student Student?
   // students this user (role PARENT) is a guardian of
   parentOf ParentStudent[] @relation("ParentLinks")
 
@@ -266,9 +264,6 @@ model Student {
   id            String        @id @default(cuid())
   schoolId      String
   school        School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  // optional login — stays null until the Phase 5 student/parent portal
-  userId        String?       @unique
-  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   rollNo        String
   name          String
   gender        Gender?
