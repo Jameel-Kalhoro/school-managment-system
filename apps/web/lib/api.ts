@@ -1,9 +1,14 @@
 import type { AuthUser, Role, UserStatus } from '@sms/shared';
 import type {
   AcademicYear,
+  Assignment,
+  AttendanceRecord,
+  AttendanceStatus,
   ClassSubject,
   CreateTeacherResult,
   CreateUserResult,
+  ExamType,
+  Grade,
   ManagedUser,
   OnboardResult,
   Paginated,
@@ -237,4 +242,59 @@ export const teacherPortalApi = {
     classId: string,
     body: { rollNo: string; name: string; gender?: string; guardianName?: string; guardianPhone?: string },
   ) => apiFetch<Student>(`/teacher/classes/${classId}/students`, { method: 'POST', body }),
+};
+
+// ─── Phase 2b — activities ──────────────────────────────────
+export const attendanceApi = {
+  // teacher
+  markClass: (
+    classId: string,
+    body: { date: string; records: { studentId: string; status: AttendanceStatus }[] },
+  ) => apiFetch<AttendanceRecord[]>(`/teacher/classes/${classId}/attendance`, { method: 'POST', body }),
+  teacherByDate: (classId: string, date: string) =>
+    apiFetch<AttendanceRecord[]>(`/teacher/classes/${classId}/attendance`, { query: { date } }),
+  // admin
+  adminList: (params: { classId?: string; date?: string } = {}) =>
+    apiFetch<AttendanceRecord[]>('/attendance', { query: params }),
+};
+
+export const assignmentsApi = {
+  teacherList: (params: { classId?: string } = {}) =>
+    apiFetch<Assignment[]>('/teacher/assignments', { query: params }),
+  create: (body: {
+    classId: string;
+    subjectId: string;
+    title: string;
+    description?: string;
+    dueDate?: string;
+    attachmentUrl?: string;
+  }) => apiFetch<Assignment>('/teacher/assignments', { method: 'POST', body }),
+  update: (
+    id: string,
+    body: { title?: string; description?: string; dueDate?: string; attachmentUrl?: string },
+  ) => apiFetch<Assignment>(`/teacher/assignments/${id}`, { method: 'PATCH', body }),
+  remove: (id: string) => apiFetch<void>(`/teacher/assignments/${id}`, { method: 'DELETE' }),
+  adminList: (params: { classId?: string; subjectId?: string } = {}) =>
+    apiFetch<Assignment[]>('/assignments', { query: params }),
+};
+
+export const gradesApi = {
+  teacherList: (params: { classId?: string; subjectId?: string; studentId?: string } = {}) =>
+    apiFetch<Grade[]>('/teacher/grades', { query: params }),
+  create: (body: {
+    studentId: string;
+    classId: string;
+    subjectId: string;
+    examType: ExamType;
+    marksObtained: number;
+    totalMarks: number;
+    remarks?: string;
+  }) => apiFetch<Grade>('/teacher/grades', { method: 'POST', body }),
+  update: (
+    id: string,
+    body: { examType?: ExamType; marksObtained?: number; totalMarks?: number; remarks?: string },
+  ) => apiFetch<Grade>(`/teacher/grades/${id}`, { method: 'PATCH', body }),
+  remove: (id: string) => apiFetch<void>(`/teacher/grades/${id}`, { method: 'DELETE' }),
+  adminList: (params: { classId?: string; subjectId?: string; studentId?: string } = {}) =>
+    apiFetch<Grade[]>('/grades', { query: params }),
 };

@@ -24,6 +24,9 @@ export class TeacherPortalService {
       },
       include: {
         academicYear: { select: { id: true, name: true, isCurrent: true } },
+        classSubjects: {
+          select: { id: true, subject: { select: { id: true, name: true, code: true } } },
+        },
         _count: { select: { students: true } },
       },
       orderBy: [{ name: 'asc' }, { section: 'asc' }],
