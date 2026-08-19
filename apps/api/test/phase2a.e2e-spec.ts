@@ -204,4 +204,22 @@ describe('Phase 2a — Academics structure (e2e)', () => {
     const bSubjects = await request(http).get('/api/subjects').set(auth(adminBToken)).expect(200);
     expect(bSubjects.body.total).toBe(0);
   });
+
+  it('deleting the class-teacher user frees the class', async () => {
+    // Resolve the teacher's login id, then delete the user as the admin.
+    const teacherLogin = await login(teacherEmail, teacherTempPassword).expect(200);
+    const teacherUserId = teacherLogin.body.user.id as string;
+
+    await request(http)
+      .delete(`/api/users/${teacherUserId}`)
+      .set(auth(adminAToken))
+      .expect(200);
+
+    // The class survives but its class-teacher slot is vacated (SetNull).
+    const cls = await request(http)
+      .get(`/api/classes/${ctx.classId}`)
+      .set(auth(adminAToken))
+      .expect(200);
+    expect(cls.body.classTeacherId).toBeNull();
+  });
 });
