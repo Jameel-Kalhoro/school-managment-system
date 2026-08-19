@@ -13,6 +13,9 @@ import { TeachersModule } from './academics/teachers/teachers.module';
 import { ClassesModule } from './academics/classes/classes.module';
 import { StudentsModule } from './academics/students/students.module';
 import { TeacherPortalModule } from './academics/teacher-portal/teacher-portal.module';
+import { AttendanceModule } from './academics/attendance/attendance.module';
+import { AssignmentsModule } from './academics/assignments/assignments.module';
+import { GradesModule } from './academics/grades/grades.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -43,6 +46,9 @@ import { RolesGuard } from './common/guards/roles.guard';
     ClassesModule,
     StudentsModule,
     TeacherPortalModule,
+    AttendanceModule,
+    AssignmentsModule,
+    GradesModule,
     HealthModule,
   ],
   providers: [

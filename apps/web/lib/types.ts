@@ -131,3 +131,44 @@ export interface Student {
   status: string;
 }
 
+// ─── Academics — activities (Phase 2b) ──────────────────────
+
+export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'LEAVE';
+export type ExamType = 'QUIZ' | 'MIDTERM' | 'FINAL' | 'ASSIGNMENT';
+
+export interface AttendanceRecord {
+  id: string;
+  date: string;
+  status: AttendanceStatus;
+  markedById: string | null;
+  student: { id: string; rollNo: string; name: string };
+  class?: { id: string; name: string; section: string | null };
+}
+
+export interface Assignment {
+  id: string;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  attachmentUrl: string | null;
+  classId: string;
+  subjectId: string;
+  teacherId: string | null;
+  class?: { id: string; name: string; section: string | null };
+  subject?: { id: string; name: string; code: string | null };
+}
+
+export interface Grade {
+  id: string;
+  studentId: string;
+  classId: string;
+  subjectId: string;
+  examType: ExamType;
+  marksObtained: number;
+  totalMarks: number;
+  remarks: string | null;
+  recordedById: string | null;
+  student?: { id: string; rollNo: string; name: string };
+  subject?: { id: string; name: string; code: string | null };
+}
+

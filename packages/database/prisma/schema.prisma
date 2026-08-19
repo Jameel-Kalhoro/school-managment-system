@@ -64,6 +64,20 @@ enum TeacherStatus {
   INACTIVE
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+}
+
+enum ExamType {
+  QUIZ
+  MIDTERM
+  FINAL
+  ASSIGNMENT
+}
+
 // ─── Tenancy / platform ──────────────────────────────────────
 
 model School {
@@ -84,6 +98,9 @@ model School {
   teachers      Teacher[]
   students      Student[]
   classSubjects ClassSubject[]
+  attendance    Attendance[]
+  assignments   Assignment[]
+  grades        Grade[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,6 +200,8 @@ model Subject {
   code     String?
 
   classSubjects ClassSubject[]
+  assignments   Assignment[]
+  grades        Grade[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,6 +224,9 @@ model Teacher {
 
   classTeacherOf SchoolClass[]  @relation("ClassTeacher")
   classSubjects  ClassSubject[]
+  markedAttendance Attendance[]
+  assignments      Assignment[]
+  recordedGrades   Grade[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -225,6 +247,9 @@ model SchoolClass {
 
   students      Student[]
   classSubjects ClassSubject[]
+  attendance    Attendance[]
+  assignments   Assignment[]
+  grades        Grade[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -252,6 +277,9 @@ model Student {
   admissionDate DateTime?
   status        StudentStatus @default(ACTIVE)
 
+  attendance Attendance[]
+  grades     Grade[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -278,4 +306,84 @@ model ClassSubject {
   @@unique([classId, subjectId])
   @@index([schoolId])
   @@index([classId])
+}
+
+// ─── Academics — activities (Phase 2b) ───────────────────────
+
+// One row per student per class per date.
+model Attendance {
+  id         String           @id @default(cuid())
+  schoolId   String
+  school     School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId    String
+  class      SchoolClass      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date       DateTime         @db.Date
+  status     AttendanceStatus @default(PRESENT)
+  // the teacher who marked it; kept as history even if the teacher is removed
+  markedById String?
+  markedBy   Teacher?         @relation(fields: [markedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([classId, studentId, date])
+  @@index([schoolId])
+  @@index([classId, date])
+  @@index([studentId])
+  @@map("attendance")
+}
+
+model Assignment {
+  id            String      @id @default(cuid())
+  schoolId      String
+  school        School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId       String
+  class         SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  // the authoring teacher; nulled if the teacher is removed
+  teacherId     String?
+  teacher       Teacher?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  title         String
+  description   String?
+  dueDate       DateTime?
+  // plain URL for now — file upload arrives with the files module
+  attachmentUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([classId])
+  @@index([subjectId])
+  @@map("assignments")
+}
+
+model Grade {
+  id            String      @id @default(cuid())
+  schoolId      String
+  school        School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId       String
+  class         SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  examType      ExamType
+  marksObtained Float
+  totalMarks    Float
+  remarks       String?
+  // the recording teacher; nulled if the teacher is removed
+  recordedById  String?
+  recordedBy    Teacher?    @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([classId, subjectId])
+  @@index([studentId])
+  @@map("grades")
 }

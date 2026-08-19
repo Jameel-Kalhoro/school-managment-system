@@ -55,6 +55,20 @@ export enum TeacherStatus {
   INACTIVE = 'INACTIVE',
 }
 
+export enum AttendanceStatus {
+  PRESENT = 'PRESENT',
+  ABSENT = 'ABSENT',
+  LATE = 'LATE',
+  LEAVE = 'LEAVE',
+}
+
+export enum ExamType {
+  QUIZ = 'QUIZ',
+  MIDTERM = 'MIDTERM',
+  FINAL = 'FINAL',
+  ASSIGNMENT = 'ASSIGNMENT',
+}
+
 /** Roles that operate at the platform level (no school scope). */
 export const PLATFORM_ROLES: readonly Role[] = [Role.SUPER_ADMIN];
 
