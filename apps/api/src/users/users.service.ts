@@ -136,4 +136,23 @@ export class UsersService {
     }
     return this.findOne(id);
   }
+
+  /**
+   * Deletes a user in the caller's school. The Prisma extension scopes the
+   * delete to the caller's schoolId, so an Admin can only remove their own
+   * school's users (and never a SUPER_ADMIN). Dependents are freed by the
+   * schema's cascade/SetNull rules: a backing Teacher profile is removed and
+   * its class-teacher / subject-teacher slots and activity authorship are
+   * nulled; a backing Student keeps its record with the login link cleared.
+   */
+  async remove(currentUserId: string, id: string) {
+    if (id === currentUserId) {
+      throw new BadRequestException('You cannot delete your own account');
+    }
+    const { count } = await this.prisma.user.deleteMany({ where: { id } });
+    if (count === 0) {
+      throw new NotFoundException('User not found');
+    }
+    return { id, deleted: true };
+  }
 }

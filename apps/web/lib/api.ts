@@ -183,6 +183,7 @@ export const usersApi = {
     apiFetch<CreateUserResult>('/users', { method: 'POST', body }),
   setStatus: (id: string, status: UserStatus) =>
     apiFetch<ManagedUser>(`/users/${id}/status`, { method: 'PATCH', body: { status } }),
+  remove: (id: string) => apiFetch<void>(`/users/${id}`, { method: 'DELETE' }),
 };
 
 export const subjectsApi = {

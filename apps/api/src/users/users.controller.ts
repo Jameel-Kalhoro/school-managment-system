@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -52,5 +53,10 @@ export class UsersController {
   @Patch(':id/status')
   setStatus(@Param('id') id: string, @Body() dto: SetUserStatusDto) {
     return this.users.setStatus(id, dto.status);
+  }
+
+  @Delete(':id')
+  remove(@CurrentUser('id') currentUserId: string, @Param('id') id: string) {
+    return this.users.remove(currentUserId, id);
   }
 }

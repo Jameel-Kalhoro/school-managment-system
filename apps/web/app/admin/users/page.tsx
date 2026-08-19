@@ -14,7 +14,7 @@ import {
   Select,
   Spinner,
 } from '@/components/ui';
-import { usersApi } from '@/lib/api';
+import { loadSession, usersApi } from '@/lib/api';
 import type { CreateUserResult } from '@/lib/types';
 import { useAsync } from '@/lib/use-async';
 
@@ -24,6 +24,21 @@ export default function UsersPage() {
   const users = useAsync(() => usersApi.list());
   const [showForm, setShowForm] = useState(false);
   const [created, setCreated] = useState<CreateUserResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const myId = loadSession()?.user.id;
+
+  async function remove(id: string, name: string) {
+    if (!window.confirm(`Delete ${name}? Their teacher/student profile and role assignments will be freed. This cannot be undone.`)) {
+      return;
+    }
+    setError(null);
+    try {
+      await usersApi.remove(id);
+      users.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete user');
+    }
+  }
 
   return (
     <div>
@@ -35,6 +50,8 @@ export default function UsersPage() {
           </Button>
         }
       />
+
+      {error && <div className="mb-4"><Alert>{error}</Alert></div>}
 
       {created && (
         <Card className="mb-4 border-emerald-200">
@@ -77,18 +94,25 @@ export default function UsersPage() {
                   <td className="px-4 py-3">{u.role}</td>
                   <td className="px-4 py-3"><Badge>{u.status}</Badge></td>
                   <td className="px-4 py-3">
-                    <Button
-                      variant={u.status === 'ACTIVE' ? 'danger' : 'ghost'}
-                      onClick={async () => {
-                        await usersApi.setStatus(
-                          u.id,
-                          u.status === 'ACTIVE' ? UserStatus.INACTIVE : UserStatus.ACTIVE,
-                        );
-                        users.reload();
-                      }}
-                    >
-                      {u.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={u.status === 'ACTIVE' ? 'ghost' : 'ghost'}
+                        onClick={async () => {
+                          await usersApi.setStatus(
+                            u.id,
+                            u.status === 'ACTIVE' ? UserStatus.INACTIVE : UserStatus.ACTIVE,
+                          );
+                          users.reload();
+                        }}
+                      >
+                        {u.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                      </Button>
+                      {u.id !== myId && (
+                        <Button variant="danger" onClick={() => remove(u.id, u.name)}>
+                          Delete
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

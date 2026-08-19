@@ -26,6 +26,7 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
   let superToken: string;
   let alphaToken: string;
   let alphaTemp: string;
+  let alphaId: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -113,6 +114,7 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
     const res = await login(alphaEmail, 'AlphaNew123!').expect(200);
     expect(res.body.user.mustChangePassword).toBe(false);
     alphaToken = res.body.accessToken;
+    alphaId = res.body.user.id;
   });
 
   it('creates a teacher and blocks SUPER_ADMIN creation', async () => {
@@ -129,6 +131,23 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
   });
 
   it('lists only its own school users (admin + teacher)', async () => {
+    const res = await request(http).get('/api/users').set(auth(alphaToken)).expect(200);
+    expect(res.body.total).toBe(2);
+  });
+
+  it('deletes a user, and blocks deleting your own account', async () => {
+    const created = await request(http)
+      .post('/api/users')
+      .set(auth(alphaToken))
+      .send({ name: 'Temp Parent', email: `tmp-${run}@test.local`, role: 'PARENT' })
+      .expect(201);
+    const tmpId = created.body.user.id as string;
+
+    // Self-delete is refused.
+    await request(http).delete(`/api/users/${alphaId}`).set(auth(alphaToken)).expect(400);
+
+    // Deleting the temp user succeeds and the list returns to admin + teacher.
+    await request(http).delete(`/api/users/${tmpId}`).set(auth(alphaToken)).expect(200);
     const res = await request(http).get('/api/users').set(auth(alphaToken)).expect(200);
     expect(res.body.total).toBe(2);
   });
@@ -175,6 +194,13 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
       .set(auth(betaLogin.body.accessToken))
       .expect(200);
     expect(betaUsers.body.total).toBe(1);
+
+    // Beta admin cannot delete an Alpha user — the delete is auto-scoped, so
+    // Alpha's admin id is simply not found in Beta's school.
+    await request(http)
+      .delete(`/api/users/${alphaId}`)
+      .set(auth(betaLogin.body.accessToken))
+      .expect(404);
 
     // Alpha admin cannot reach platform routes; anonymous is unauthorized.
     await request(http).get('/api/platform/schools').set(auth(alphaToken)).expect(403);
