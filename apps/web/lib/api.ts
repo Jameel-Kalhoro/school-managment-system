@@ -5,11 +5,14 @@ import type {
   AttendanceRecord,
   AttendanceStatus,
   ClassSubject,
+  CreateParentResult,
   CreateTeacherResult,
   CreateUserResult,
   ExamType,
   Grade,
   ManagedUser,
+  Parent,
+  ParentChild,
   OnboardResult,
   Paginated,
   Plan,
@@ -298,4 +301,23 @@ export const gradesApi = {
   remove: (id: string) => apiFetch<void>(`/teacher/grades/${id}`, { method: 'DELETE' }),
   adminList: (params: { classId?: string; subjectId?: string; studentId?: string } = {}) =>
     apiFetch<Grade[]>('/grades', { query: params }),
+};
+
+// ─── Phase 5 — parents ──────────────────────────────────────
+export const parentsApi = {
+  list: () => apiFetch<Parent[]>('/parents'),
+  create: (body: { name: string; email: string; phone?: string; studentIds: string[] }) =>
+    apiFetch<CreateParentResult>('/parents', { method: 'POST', body }),
+  setChildren: (id: string, studentIds: string[]) =>
+    apiFetch<Parent>(`/parents/${id}/children`, { method: 'PATCH', body: { studentIds } }),
+};
+
+export const parentPortalApi = {
+  children: () => apiFetch<ParentChild[]>('/parent/children'),
+  childAttendance: (studentId: string) =>
+    apiFetch<AttendanceRecord[]>(`/parent/children/${studentId}/attendance`),
+  childGrades: (studentId: string) =>
+    apiFetch<Grade[]>(`/parent/children/${studentId}/grades`),
+  childAssignments: (studentId: string) =>
+    apiFetch<Assignment[]>(`/parent/children/${studentId}/assignments`),
 };

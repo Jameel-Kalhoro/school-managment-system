@@ -15,6 +15,7 @@ const nav = [
   { href: '/admin/assignments', label: 'Assignments' },
   { href: '/admin/grades', label: 'Grades' },
   { href: '/admin/users', label: 'Users' },
+  { href: '/admin/parents', label: 'Parents' },
   { href: '/admin/academic-years', label: 'Academic Years' },
   { href: '/admin/settings', label: 'School Settings' },
 ];

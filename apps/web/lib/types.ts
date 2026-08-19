@@ -172,3 +172,27 @@ export interface Grade {
   subject?: { id: string; name: string; code: string | null };
 }
 
+// ─── Parent portal (Phase 5) ────────────────────────────────
+
+export interface ParentChild {
+  id: string;
+  name: string;
+  rollNo: string;
+  status?: string;
+  class: { id: string; name: string; section: string | null } | null;
+}
+
+export interface Parent {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  children: ParentChild[];
+}
+
+export interface CreateParentResult {
+  parent: Parent;
+  tempPassword: string;
+}
+

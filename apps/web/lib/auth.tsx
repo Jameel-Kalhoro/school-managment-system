@@ -27,7 +27,8 @@ export function homeFor(role: Role): string {
   if (role === Role.SUPER_ADMIN) return '/superadmin';
   if (role === Role.ADMIN) return '/admin';
   if (role === Role.TEACHER) return '/teacher';
-  return '/login'; // student/parent portal — Phase 5
+  if (role === Role.PARENT) return '/parent';
+  return '/login'; // student portal — later phase
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

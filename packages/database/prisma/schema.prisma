@@ -101,6 +101,7 @@ model School {
   attendance    Attendance[]
   assignments   Assignment[]
   grades        Grade[]
+  parentStudents ParentStudent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,6 +148,8 @@ model User {
   // optional academic-profile links (a login can back a teacher or a student)
   teacher Teacher?
   student Student?
+  // students this user (role PARENT) is a guardian of
+  parentOf ParentStudent[] @relation("ParentLinks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -279,6 +282,7 @@ model Student {
 
   attendance Attendance[]
   grades     Grade[]
+  parentLinks ParentStudent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -386,4 +390,26 @@ model Grade {
   @@index([classId, subjectId])
   @@index([studentId])
   @@map("grades")
+}
+
+// ─── Parent portal (Phase 5) ─────────────────────────────────
+
+// Links a PARENT user to a student they are a guardian of. One parent can be
+// linked to many students (siblings); a student can have multiple guardians.
+model ParentStudent {
+  id        String  @id @default(cuid())
+  schoolId  String
+  school    School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  parentId  String
+  parent    User    @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([parentId, studentId])
+  @@index([schoolId])
+  @@index([parentId])
+  @@index([studentId])
+  @@map("parent_students")
 }
