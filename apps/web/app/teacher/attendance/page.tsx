@@ -109,7 +109,12 @@ export default function TeacherAttendancePage() {
                 {roster.data?.map((s) => (
                   <tr key={s.id} className="border-b border-slate-100 last:border-0">
                     <td className="px-4 py-3 font-medium text-slate-900">{s.rollNo}</td>
-                    <td className="px-4 py-3">{s.name}</td>
+                    <td className="px-4 py-3">
+                      {s.name}
+                      <div className="text-xs font-normal text-slate-400">
+                        Guardian: {s.guardianName ?? '—'}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <Select
                         className="max-w-[10rem]"

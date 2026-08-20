@@ -7,7 +7,7 @@ import { ListAttendanceQuery } from './dto/attendance-query.dto';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto';
 
 const STUDENT_SELECT = {
-  student: { select: { id: true, rollNo: true, name: true } },
+  student: { select: { id: true, rollNo: true, name: true, guardianName: true } },
 } satisfies Prisma.AttendanceInclude;
 
 const ADMIN_SELECT = {

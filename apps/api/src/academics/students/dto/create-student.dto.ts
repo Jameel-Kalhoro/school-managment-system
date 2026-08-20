@@ -24,9 +24,10 @@ export class CreateStudentDto {
   @IsDateString()
   dob?: string;
 
-  @IsOptional()
+  // parent/guardian name is required — every student must have a named parent
   @IsString()
-  guardianName?: string;
+  @MinLength(2)
+  guardianName!: string;
 
   @IsOptional()
   @IsString()

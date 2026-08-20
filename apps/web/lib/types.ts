@@ -141,7 +141,7 @@ export interface AttendanceRecord {
   date: string;
   status: AttendanceStatus;
   markedById: string | null;
-  student: { id: string; rollNo: string; name: string };
+  student: { id: string; rollNo: string; name: string; guardianName?: string | null };
   class?: { id: string; name: string; section: string | null };
 }
 
@@ -168,7 +168,7 @@ export interface Grade {
   totalMarks: number;
   remarks: string | null;
   recordedById: string | null;
-  student?: { id: string; rollNo: string; name: string };
+  student?: { id: string; rollNo: string; name: string; guardianName?: string | null };
   subject?: { id: string; name: string; code: string | null };
 }
 

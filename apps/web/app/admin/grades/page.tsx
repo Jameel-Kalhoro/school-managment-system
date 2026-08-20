@@ -53,6 +53,11 @@ export default function AdminGradesPage() {
                 <tr key={g.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3 font-medium text-slate-900">
                     {g.student ? `${g.student.rollNo} · ${g.student.name}` : '—'}
+                    {g.student && (
+                      <div className="text-xs font-normal text-slate-400">
+                        Guardian: {g.student.guardianName ?? '—'}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-500">{g.subject?.name ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{g.examType}</td>

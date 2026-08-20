@@ -124,7 +124,7 @@ describe('Phase 5 — Parent portal (e2e)', () => {
     const student = await request(http)
       .post('/api/students')
       .set(auth(adminAToken))
-      .send({ rollNo: '001', name: 'Student One' })
+      .send({ rollNo: '001', name: 'Student One', guardianName: 'Guardian One' })
       .expect(201);
     ctx.studentId = student.body.id;
     await request(http)
@@ -154,7 +154,7 @@ describe('Phase 5 — Parent portal (e2e)', () => {
     const other = await request(http)
       .post('/api/students')
       .set(auth(adminAToken))
-      .send({ rollNo: '002', name: 'Student Two' })
+      .send({ rollNo: '002', name: 'Student Two', guardianName: 'Guardian Two' })
       .expect(201);
     ctx.otherStudentId = other.body.id;
   });

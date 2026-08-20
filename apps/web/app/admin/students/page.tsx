@@ -54,6 +54,7 @@ export default function StudentsPage() {
               <tr>
                 <th className="px-4 py-3 font-medium">Roll No</th>
                 <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Guardian</th>
                 <th className="px-4 py-3 font-medium">Class</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
@@ -64,6 +65,12 @@ export default function StudentsPage() {
                 <tr key={s.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3 font-medium text-slate-900">{s.rollNo}</td>
                   <td className="px-4 py-3">{s.name}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {s.guardianName ?? '—'}
+                    {s.guardianPhone && (
+                      <div className="text-xs text-slate-400">{s.guardianPhone}</div>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <Select
                       value={s.classId ?? ''}
@@ -90,7 +97,7 @@ export default function StudentsPage() {
                 </tr>
               ))}
               {students.data?.data.length === 0 && (
-                <tr><td className="px-4 py-3 text-slate-400" colSpan={5}>No students yet.</td></tr>
+                <tr><td className="px-4 py-3 text-slate-400" colSpan={6}>No students yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -123,7 +130,7 @@ function StudentForm({ classes, onDone }: { classes: SchoolClass[]; onDone: () =
         rollNo: form.rollNo,
         name: form.name,
         gender: form.gender || undefined,
-        guardianName: form.guardianName || undefined,
+        guardianName: form.guardianName,
         guardianPhone: form.guardianPhone || undefined,
         classId: form.classId || undefined,
       });
@@ -160,8 +167,8 @@ function StudentForm({ classes, onDone }: { classes: SchoolClass[]; onDone: () =
             ))}
           </Select>
         </Field>
-        <Field label="Guardian name (optional)">
-          <Input value={form.guardianName} onChange={set('guardianName')} />
+        <Field label="Guardian name">
+          <Input value={form.guardianName} onChange={set('guardianName')} required />
         </Field>
         <Field label="Guardian phone (optional)">
           <Input value={form.guardianPhone} onChange={set('guardianPhone')} />

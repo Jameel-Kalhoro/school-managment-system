@@ -127,7 +127,7 @@ describe('Phase 2b — Academics activities (e2e)', () => {
     const student = await request(http)
       .post('/api/students')
       .set(auth(adminAToken))
-      .send({ rollNo: '001', name: 'Student One' })
+      .send({ rollNo: '001', name: 'Student One', guardianName: 'Guardian One' })
       .expect(201);
     ctx.studentId = student.body.id;
     await request(http)
@@ -231,7 +231,7 @@ describe('Phase 2b — Academics activities (e2e)', () => {
     const outsider = await request(http)
       .post('/api/students')
       .set(auth(adminAToken))
-      .send({ rollNo: '999', name: 'Outsider' })
+      .send({ rollNo: '999', name: 'Outsider', guardianName: 'Guardian Nine' })
       .expect(201);
     await request(http)
       .post(`/api/teacher/classes/${ctx.classId}/attendance`)

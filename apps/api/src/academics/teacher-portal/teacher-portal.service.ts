@@ -38,7 +38,15 @@ export class TeacherPortalService {
     await this.access.assertTeachesClass(teacher.id, classId);
     return this.prisma.student.findMany({
       where: { classId },
-      select: { id: true, rollNo: true, name: true, gender: true, status: true },
+      select: {
+        id: true,
+        rollNo: true,
+        name: true,
+        gender: true,
+        status: true,
+        guardianName: true,
+        guardianPhone: true,
+      },
       orderBy: { rollNo: 'asc' },
     });
   }

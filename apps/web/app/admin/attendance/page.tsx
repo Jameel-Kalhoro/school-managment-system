@@ -67,6 +67,9 @@ export default function AdminAttendancePage() {
                   </td>
                   <td className="px-4 py-3 font-medium text-slate-900">
                     {a.student.rollNo} · {a.student.name}
+                    <div className="text-xs font-normal text-slate-400">
+                      Guardian: {a.student.guardianName ?? '—'}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <Badge>{a.status}</Badge>

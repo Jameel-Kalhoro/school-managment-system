@@ -38,6 +38,7 @@ export default function TeacherRosterPage() {
               <tr>
                 <th className="px-4 py-3 font-medium">Roll No</th>
                 <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Guardian</th>
                 <th className="px-4 py-3 font-medium">Gender</th>
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
@@ -47,12 +48,18 @@ export default function TeacherRosterPage() {
                 <tr key={s.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3 font-medium text-slate-900">{s.rollNo}</td>
                   <td className="px-4 py-3">{s.name}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {s.guardianName ?? '—'}
+                    {s.guardianPhone && (
+                      <div className="text-xs text-slate-400">{s.guardianPhone}</div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-slate-500">{s.gender ?? '—'}</td>
                   <td className="px-4 py-3"><Badge>{s.status}</Badge></td>
                 </tr>
               ))}
               {roster.data?.length === 0 && (
-                <tr><td className="px-4 py-3 text-slate-400" colSpan={4}>No students in this class.</td></tr>
+                <tr><td className="px-4 py-3 text-slate-400" colSpan={5}>No students in this class.</td></tr>
               )}
             </tbody>
           </table>
@@ -78,7 +85,7 @@ function AddStudentForm({ classId, onDone }: { classId: string; onDone: () => vo
         rollNo: form.rollNo,
         name: form.name,
         gender: form.gender || undefined,
-        guardianName: form.guardianName || undefined,
+        guardianName: form.guardianName,
         guardianPhone: form.guardianPhone || undefined,
       });
       onDone();
@@ -107,8 +114,8 @@ function AddStudentForm({ classId, onDone }: { classId: string; onDone: () => vo
           </Select>
         </Field>
         <div className="hidden sm:block" />
-        <Field label="Guardian name (optional)">
-          <Input value={form.guardianName} onChange={set('guardianName')} />
+        <Field label="Guardian name">
+          <Input value={form.guardianName} onChange={set('guardianName')} required />
         </Field>
         <Field label="Guardian phone (optional)">
           <Input value={form.guardianPhone} onChange={set('guardianPhone')} />

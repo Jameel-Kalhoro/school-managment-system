@@ -8,7 +8,7 @@ import { ListGradesQuery } from './dto/grades-query.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 
 const DETAIL_SELECT = {
-  student: { select: { id: true, rollNo: true, name: true } },
+  student: { select: { id: true, rollNo: true, name: true, guardianName: true } },
   subject: { select: { id: true, name: true, code: true } },
 } satisfies Prisma.GradeInclude;
 
