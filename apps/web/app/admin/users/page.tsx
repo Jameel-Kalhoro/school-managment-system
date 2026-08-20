@@ -18,7 +18,9 @@ import { loadSession, usersApi } from '@/lib/api';
 import type { CreateUserResult } from '@/lib/types';
 import { useAsync } from '@/lib/use-async';
 
-const ASSIGNABLE: Role[] = [Role.ADMIN, Role.TEACHER, Role.STUDENT, Role.PARENT];
+// Teachers are provisioned from the Teachers section (which creates their
+// profile too); the generic Users form only creates Admin and Parent logins.
+const ASSIGNABLE: Role[] = [Role.ADMIN, Role.PARENT];
 
 export default function UsersPage() {
   const users = useAsync(() => usersApi.list());
@@ -125,7 +127,7 @@ export default function UsersPage() {
 }
 
 function UserForm({ onDone }: { onDone: (r: CreateUserResult) => void }) {
-  const [form, setForm] = useState({ name: '', email: '', role: Role.TEACHER as Role, phone: '' });
+  const [form, setForm] = useState({ name: '', email: '', role: Role.ADMIN as Role, phone: '' });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

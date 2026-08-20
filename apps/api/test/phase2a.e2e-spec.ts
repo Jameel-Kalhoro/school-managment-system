@@ -130,10 +130,17 @@ describe('Phase 2a — Academics structure (e2e)', () => {
   });
 
   it('admin adds a student and assigns them to the class', async () => {
+    // Guardian name is required.
+    await request(http)
+      .post('/api/students')
+      .set(auth(adminAToken))
+      .send({ rollNo: '001', name: 'No Guardian' })
+      .expect(400);
+
     const student = await request(http)
       .post('/api/students')
       .set(auth(adminAToken))
-      .send({ rollNo: '001', name: 'Student One' })
+      .send({ rollNo: '001', name: 'Student One', guardianName: 'Guardian One', guardianPhone: '03001234567' })
       .expect(201);
     ctx.studentId = student.body.id;
 
@@ -157,6 +164,9 @@ describe('Phase 2a — Academics structure (e2e)', () => {
       .expect(200);
     expect(roster.body).toHaveLength(1);
     expect(roster.body[0].rollNo).toBe('001');
+    // Teachers see the guardian name but NOT the phone number (admin-only).
+    expect(roster.body[0].guardianName).toBe('Guardian One');
+    expect(roster.body[0].guardianPhone).toBeUndefined();
 
     // A class the teacher does NOT teach → forbidden.
     const other = await request(http)
@@ -173,7 +183,7 @@ describe('Phase 2a — Academics structure (e2e)', () => {
     await request(http)
       .post(`/api/teacher/classes/${ctx.classId}/students`)
       .set(auth(teacherToken))
-      .send({ rollNo: '002', name: 'Added ByTeacher' })
+      .send({ rollNo: '002', name: 'Added ByTeacher', guardianName: 'Guardian Two' })
       .expect(201);
     const roster2 = await request(http)
       .get(`/api/teacher/classes/${ctx.classId}/students`)
@@ -186,7 +196,7 @@ describe('Phase 2a — Academics structure (e2e)', () => {
     await request(http)
       .post(`/api/teacher/classes/${other.body.id}/students`)
       .set(auth(teacherToken))
-      .send({ rollNo: '003', name: 'Nope' })
+      .send({ rollNo: '003', name: 'Nope', guardianName: 'Guardian Three' })
       .expect(403);
 
     // Teacher cannot create classes (Admin-only).

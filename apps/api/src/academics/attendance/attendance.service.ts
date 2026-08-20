@@ -7,7 +7,7 @@ import { ListAttendanceQuery } from './dto/attendance-query.dto';
 import { MarkAttendanceDto } from './dto/mark-attendance.dto';
 
 const STUDENT_SELECT = {
-  student: { select: { id: true, rollNo: true, name: true } },
+  student: { select: { id: true, rollNo: true, name: true, guardianName: true } },
 } satisfies Prisma.AttendanceInclude;
 
 const ADMIN_SELECT = {
@@ -35,7 +35,7 @@ export class AttendanceService {
   ) {
     const sid = requireSchool(schoolId);
     const teacher = await this.access.getTeacherByUserId(userId);
-    await this.access.assertTeachesClass(teacher.id, classId);
+    await this.access.assertIsClassTeacher(teacher.id, classId);
 
     const studentIds = dto.records.map((r) => r.studentId);
     const uniqueIds = [...new Set(studentIds)];
@@ -71,7 +71,7 @@ export class AttendanceService {
   /** Teacher read of one class's attendance for a date. */
   async teacherByDate(userId: string, classId: string, date: string) {
     const teacher = await this.access.getTeacherByUserId(userId);
-    await this.access.assertTeachesClass(teacher.id, classId);
+    await this.access.assertIsClassTeacher(teacher.id, classId);
     return this.readClassDate(classId, date);
   }
 

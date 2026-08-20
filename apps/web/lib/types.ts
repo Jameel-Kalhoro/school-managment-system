@@ -116,6 +116,8 @@ export interface SchoolClass {
   classTeacher?: { id: string; user: { id: string; name: string; email: string } } | null;
   classSubjects?: ClassSubject[];
   _count?: { students: number; classSubjects: number };
+  // set on the teacher-portal myClasses response: is the current teacher the class teacher?
+  isClassTeacher?: boolean;
 }
 
 export interface Student {
@@ -141,7 +143,7 @@ export interface AttendanceRecord {
   date: string;
   status: AttendanceStatus;
   markedById: string | null;
-  student: { id: string; rollNo: string; name: string };
+  student: { id: string; rollNo: string; name: string; guardianName?: string | null };
   class?: { id: string; name: string; section: string | null };
 }
 
@@ -168,7 +170,31 @@ export interface Grade {
   totalMarks: number;
   remarks: string | null;
   recordedById: string | null;
-  student?: { id: string; rollNo: string; name: string };
+  student?: { id: string; rollNo: string; name: string; guardianName?: string | null };
   subject?: { id: string; name: string; code: string | null };
+}
+
+// ─── Parent portal (Phase 5) ────────────────────────────────
+
+export interface ParentChild {
+  id: string;
+  name: string;
+  rollNo: string;
+  status?: string;
+  class: { id: string; name: string; section: string | null } | null;
+}
+
+export interface Parent {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  children: ParentChild[];
+}
+
+export interface CreateParentResult {
+  parent: Parent;
+  tempPassword: string;
 }
 

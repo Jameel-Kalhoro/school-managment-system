@@ -18,6 +18,9 @@ export default function TeacherAttendancePage() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
+  // Attendance is class-teacher-only, so only offer classes this teacher owns.
+  const classTeacherClasses = (classes.data ?? []).filter((c) => c.isClassTeacher);
+
   const roster = useAsync(
     () => (classId ? teacherPortalApi.classRoster(classId) : Promise.resolve([])),
     [classId],
@@ -60,29 +63,36 @@ export default function TeacherAttendancePage() {
     <div>
       <PageHeader title="Attendance" />
 
-      <Card className="mb-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Class">
-            <Select value={classId} onChange={(e) => setClassId(e.target.value)}>
-              <option value="">Select a class…</option>
-              {classes.data?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.section ? ` - ${c.section}` : ''}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Date">
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-            />
-          </Field>
-        </div>
-      </Card>
+      {classTeacherClasses.length === 0 && !classes.loading ? (
+        <p className="text-sm text-slate-400">
+          You are not assigned as a class teacher for any class. Only the class teacher can take
+          attendance.
+        </p>
+      ) : (
+        <>
+          <Card className="mb-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Class">
+                <Select value={classId} onChange={(e) => setClassId(e.target.value)}>
+                  <option value="">Select a class…</option>
+                  {classTeacherClasses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                      {c.section ? ` - ${c.section}` : ''}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Date">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+                />
+              </Field>
+            </div>
+          </Card>
 
       {!classId ? (
         <p className="text-sm text-slate-400">Pick a class to mark attendance.</p>
@@ -109,7 +119,12 @@ export default function TeacherAttendancePage() {
                 {roster.data?.map((s) => (
                   <tr key={s.id} className="border-b border-slate-100 last:border-0">
                     <td className="px-4 py-3 font-medium text-slate-900">{s.rollNo}</td>
-                    <td className="px-4 py-3">{s.name}</td>
+                    <td className="px-4 py-3">
+                      {s.name}
+                      <div className="text-xs font-normal text-slate-400">
+                        Guardian: {s.guardianName ?? '—'}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <Select
                         className="max-w-[10rem]"
@@ -135,6 +150,8 @@ export default function TeacherAttendancePage() {
               {saving ? 'Saving…' : 'Save attendance'}
             </Button>
           </div>
+        </>
+      )}
         </>
       )}
     </div>

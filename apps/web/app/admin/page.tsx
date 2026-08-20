@@ -1,26 +1,27 @@
 'use client';
 
 import { Card, PageHeader, Spinner } from '@/components/ui';
-import { schoolApi, usersApi } from '@/lib/api';
+import { schoolApi, studentsApi, usersApi } from '@/lib/api';
 import { useAsync } from '@/lib/use-async';
 
 export default function AdminOverview() {
   const school = useAsync(() => schoolApi.getSettings());
   const users = useAsync(() => usersApi.list());
+  const students = useAsync(() => studentsApi.list());
   const years = useAsync(() => schoolApi.listAcademicYears());
 
   const teachers = users.data?.data.filter((u) => u.role === 'TEACHER').length ?? 0;
-  const students = users.data?.data.filter((u) => u.role === 'STUDENT').length ?? 0;
+  const studentCount = students.data?.total ?? 0;
   const current = years.data?.find((y) => y.isCurrent);
 
   return (
     <div>
       <PageHeader title={school.data ? school.data.name : 'Overview'} />
-      {school.loading || users.loading || years.loading ? (
+      {school.loading || users.loading || students.loading || years.loading ? (
         <Spinner />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Stat label="Users" value={users.data?.total ?? 0} sub={`${teachers} teachers · ${students} students`} />
+          <Stat label="Students" value={studentCount} sub={`${users.data?.total ?? 0} users · ${teachers} teachers`} />
           <Stat label="Academic years" value={years.data?.length ?? 0} sub={current ? `Current: ${current.name}` : 'None set'} />
           <Stat label="Subscription" value={school.data?.subscription?.plan?.name ?? '—'} sub={school.data?.subscription?.status} />
         </div>

@@ -8,7 +8,6 @@ export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   TEACHER = 'TEACHER',
-  STUDENT = 'STUDENT',
   PARENT = 'PARENT',
 }
 
@@ -76,15 +75,16 @@ export const PLATFORM_ROLES: readonly Role[] = [Role.SUPER_ADMIN];
 export const TENANT_ROLES: readonly Role[] = [
   Role.ADMIN,
   Role.TEACHER,
-  Role.STUDENT,
   Role.PARENT,
 ];
 
-/** Roles a school Admin is permitted to create (never SUPER_ADMIN). */
+/**
+ * Roles a school Admin may create through the generic /users endpoint.
+ * TEACHER is intentionally excluded — teachers must be provisioned via
+ * /teachers so a Teacher profile is created alongside the login.
+ */
 export const ADMIN_ASSIGNABLE_ROLES: readonly Role[] = [
   Role.ADMIN,
-  Role.TEACHER,
-  Role.STUDENT,
   Role.PARENT,
 ];
 

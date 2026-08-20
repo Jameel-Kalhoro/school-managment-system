@@ -117,20 +117,33 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
     alphaId = res.body.user.id;
   });
 
-  it('creates a teacher and blocks SUPER_ADMIN creation', async () => {
+  it('creates an allowed user and blocks TEACHER/STUDENT/SUPER_ADMIN', async () => {
+    // Admin and Parent are the only roles the generic /users endpoint allows.
     await request(http)
       .post('/api/users')
       .set(auth(alphaToken))
-      .send({ name: 'Teacher One', email: `t-${run}@test.local`, role: 'TEACHER' })
+      .send({ name: 'Second Admin', email: `a2-${run}@test.local`, role: 'ADMIN' })
       .expect(201);
+    // Teachers must be provisioned via /teachers (which creates their profile).
+    await request(http)
+      .post('/api/users')
+      .set(auth(alphaToken))
+      .send({ name: 'Teacher Nope', email: `t-${run}@test.local`, role: 'TEACHER' })
+      .expect(403);
     await request(http)
       .post('/api/users')
       .set(auth(alphaToken))
       .send({ name: 'Nope', email: `x-${run}@test.local`, role: 'SUPER_ADMIN' })
       .expect(403);
+    // STUDENT is no longer a role — students have no login, only parents do.
+    await request(http)
+      .post('/api/users')
+      .set(auth(alphaToken))
+      .send({ name: 'Kid', email: `kid-${run}@test.local`, role: 'STUDENT' })
+      .expect(400);
   });
 
-  it('lists only its own school users (admin + teacher)', async () => {
+  it('lists only its own school users (admin + one more)', async () => {
     const res = await request(http).get('/api/users').set(auth(alphaToken)).expect(200);
     expect(res.body.total).toBe(2);
   });
