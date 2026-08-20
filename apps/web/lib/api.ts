@@ -147,6 +147,8 @@ export const platformApi = {
   }) => apiFetch<Plan>('/platform/plans', { method: 'POST', body }),
   setPlanStatus: (id: string, isActive: boolean) =>
     apiFetch<Plan>(`/platform/plans/${id}/status`, { method: 'PATCH', body: { isActive } }),
+  deletePlan: (id: string) =>
+    apiFetch<void>(`/platform/plans/${id}`, { method: 'DELETE' }),
 
   listSchools: (search?: string) =>
     apiFetch<Paginated<School>>('/platform/schools', { query: { search, pageSize: 100 } }),

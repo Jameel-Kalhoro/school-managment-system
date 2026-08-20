@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { IsBoolean } from 'class-validator';
 import { Role } from '@sms/shared';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -40,5 +40,10 @@ export class PlansController {
   @Patch(':id/status')
   setStatus(@Param('id') id: string, @Body() dto: SetPlanStatusDto) {
     return this.plans.setActive(id, dto.isActive);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.plans.remove(id);
   }
 }

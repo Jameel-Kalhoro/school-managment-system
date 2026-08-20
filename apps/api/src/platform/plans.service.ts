@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@sms/database';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -68,5 +68,21 @@ export class PlansService {
   async setActive(id: string, isActive: boolean) {
     await this.findOne(id);
     return this.prisma.subscriptionPlan.update({ where: { id }, data: { isActive } });
+  }
+
+  /**
+   * Deletes a plan. Refused while any school is subscribed to it (its FK would
+   * fail anyway) — deactivate the plan instead to retire it.
+   */
+  async remove(id: string) {
+    await this.findOne(id);
+    const inUse = await this.prisma.subscription.count({ where: { planId: id } });
+    if (inUse > 0) {
+      throw new ConflictException(
+        `This plan is assigned to ${inUse} school(s); deactivate it instead.`,
+      );
+    }
+    await this.prisma.subscriptionPlan.delete({ where: { id } });
+    return { id, deleted: true };
   }
 }
