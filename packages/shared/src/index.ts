@@ -78,10 +78,13 @@ export const TENANT_ROLES: readonly Role[] = [
   Role.PARENT,
 ];
 
-/** Roles a school Admin is permitted to create (never SUPER_ADMIN). */
+/**
+ * Roles a school Admin may create through the generic /users endpoint.
+ * TEACHER is intentionally excluded — teachers must be provisioned via
+ * /teachers so a Teacher profile is created alongside the login.
+ */
 export const ADMIN_ASSIGNABLE_ROLES: readonly Role[] = [
   Role.ADMIN,
-  Role.TEACHER,
   Role.PARENT,
 ];
 
