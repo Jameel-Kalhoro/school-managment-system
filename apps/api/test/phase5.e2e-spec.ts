@@ -120,6 +120,12 @@ describe('Phase 5 — Parent portal (e2e)', () => {
       .set(auth(adminAToken))
       .send({ subjectId: ctx.subjectId, teacherId: ctx.teacherId })
       .expect(201);
+    // Attendance is class-teacher-only, so make this teacher the class teacher.
+    await request(http)
+      .patch(`/api/classes/${ctx.classId}/class-teacher`)
+      .set(auth(adminAToken))
+      .send({ teacherId: ctx.teacherId })
+      .expect(200);
 
     const student = await request(http)
       .post('/api/students')

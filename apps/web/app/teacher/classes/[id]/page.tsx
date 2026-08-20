@@ -11,7 +11,11 @@ export default function TeacherRosterPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const roster = useAsync(() => teacherPortalApi.classRoster(id), [id]);
+  const classes = useAsync(() => teacherPortalApi.myClasses());
   const [showForm, setShowForm] = useState(false);
+
+  // Only the class teacher can add students; subject teachers get a read-only roster.
+  const isClassTeacher = classes.data?.find((c) => c.id === id)?.isClassTeacher ?? false;
 
   return (
     <div>
@@ -20,10 +24,14 @@ export default function TeacherRosterPage() {
       </div>
       <PageHeader
         title="Class Roster"
-        action={<Button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Close' : 'Add student'}</Button>}
+        action={
+          isClassTeacher ? (
+            <Button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Close' : 'Add student'}</Button>
+          ) : undefined
+        }
       />
 
-      {showForm && (
+      {showForm && isClassTeacher && (
         <AddStudentForm classId={id} onDone={() => { setShowForm(false); roster.reload(); }} />
       )}
 
@@ -48,12 +56,7 @@ export default function TeacherRosterPage() {
                 <tr key={s.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-3 font-medium text-slate-900">{s.rollNo}</td>
                   <td className="px-4 py-3">{s.name}</td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {s.guardianName ?? '—'}
-                    {s.guardianPhone && (
-                      <div className="text-xs text-slate-400">{s.guardianPhone}</div>
-                    )}
-                  </td>
+                  <td className="px-4 py-3 text-slate-600">{s.guardianName ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{s.gender ?? '—'}</td>
                   <td className="px-4 py-3"><Badge>{s.status}</Badge></td>
                 </tr>

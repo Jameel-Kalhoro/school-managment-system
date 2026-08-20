@@ -226,6 +226,52 @@ describe('Phase 2b — Academics activities (e2e)', () => {
       .expect(403);
   });
 
+  it('subject teacher can view roster but not take attendance or add students', async () => {
+    // A second teacher who teaches a subject in the class but is NOT the class teacher.
+    const subject2 = await request(http)
+      .post('/api/subjects')
+      .set(auth(adminAToken))
+      .send({ name: 'Science', code: 'SCI' })
+      .expect(201);
+    const subTeacher = await request(http)
+      .post('/api/teachers')
+      .set(auth(adminAToken))
+      .send({ name: 'Sub Teacher', email: `subteacher-${run}@test.local`, qualification: 'BSc' })
+      .expect(201);
+    await request(http)
+      .post(`/api/classes/${ctx.classId}/subjects`)
+      .set(auth(adminAToken))
+      .send({ subjectId: subject2.body.id, teacherId: subTeacher.body.teacher.id })
+      .expect(201);
+    const subToken = (
+      await login(`subteacher-${run}@test.local`, subTeacher.body.tempPassword).expect(200)
+    ).body.accessToken;
+
+    // Can view the roster...
+    const roster = await request(http)
+      .get(`/api/teacher/classes/${ctx.classId}/students`)
+      .set(auth(subToken))
+      .expect(200);
+    expect(roster.body.length).toBeGreaterThanOrEqual(1);
+
+    // ...but cannot view or take attendance, nor add students (class-teacher only).
+    await request(http)
+      .get(`/api/teacher/classes/${ctx.classId}/attendance`)
+      .query({ date })
+      .set(auth(subToken))
+      .expect(403);
+    await request(http)
+      .post(`/api/teacher/classes/${ctx.classId}/attendance`)
+      .set(auth(subToken))
+      .send({ date, records: [{ studentId: ctx.studentId, status: 'PRESENT' }] })
+      .expect(403);
+    await request(http)
+      .post(`/api/teacher/classes/${ctx.classId}/students`)
+      .set(auth(subToken))
+      .send({ rollNo: '500', name: 'Sub Add', guardianName: 'Guardian Sub' })
+      .expect(403);
+  });
+
   it('validates inputs (400)', async () => {
     // Attendance for a student not in the class.
     const outsider = await request(http)

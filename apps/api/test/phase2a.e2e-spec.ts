@@ -140,7 +140,7 @@ describe('Phase 2a — Academics structure (e2e)', () => {
     const student = await request(http)
       .post('/api/students')
       .set(auth(adminAToken))
-      .send({ rollNo: '001', name: 'Student One', guardianName: 'Guardian One' })
+      .send({ rollNo: '001', name: 'Student One', guardianName: 'Guardian One', guardianPhone: '03001234567' })
       .expect(201);
     ctx.studentId = student.body.id;
 
@@ -164,8 +164,9 @@ describe('Phase 2a — Academics structure (e2e)', () => {
       .expect(200);
     expect(roster.body).toHaveLength(1);
     expect(roster.body[0].rollNo).toBe('001');
-    // Guardian name is threaded into the roster read shape.
+    // Teachers see the guardian name but NOT the phone number (admin-only).
     expect(roster.body[0].guardianName).toBe('Guardian One');
+    expect(roster.body[0].guardianPhone).toBeUndefined();
 
     // A class the teacher does NOT teach → forbidden.
     const other = await request(http)

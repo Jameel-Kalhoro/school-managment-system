@@ -15,7 +15,7 @@ export class TeacherPortalService {
 
   async myClasses(userId: string) {
     const teacher = await this.access.getTeacherByUserId(userId);
-    return this.prisma.schoolClass.findMany({
+    const classes = await this.prisma.schoolClass.findMany({
       where: {
         OR: [
           { classTeacherId: teacher.id },
@@ -31,11 +31,15 @@ export class TeacherPortalService {
       },
       orderBy: [{ name: 'asc' }, { section: 'asc' }],
     });
+    // Flag the classes this teacher is the *class teacher* of (vs subject teacher),
+    // so the client can gate class-teacher-only actions (attendance, add student).
+    return classes.map((c) => ({ ...c, isClassTeacher: c.classTeacherId === teacher.id }));
   }
 
   async classRoster(userId: string, classId: string) {
     const teacher = await this.access.getTeacherByUserId(userId);
     await this.access.assertTeachesClass(teacher.id, classId);
+    // Teachers see the guardian name only — not the phone number (admin-only).
     return this.prisma.student.findMany({
       where: { classId },
       select: {
@@ -45,15 +49,15 @@ export class TeacherPortalService {
         gender: true,
         status: true,
         guardianName: true,
-        guardianPhone: true,
       },
       orderBy: { rollNo: 'asc' },
     });
   }
 
   /**
-   * Adds a student to a class the teacher teaches. classId is forced to the
-   * given (already-authorized) class, so it can't be spoofed via the body.
+   * Adds a student to a class. Restricted to the class teacher. classId is
+   * forced to the given (already-authorized) class, so it can't be spoofed
+   * via the body.
    */
   async addStudent(
     userId: string,
@@ -62,7 +66,7 @@ export class TeacherPortalService {
     dto: CreateStudentDto,
   ) {
     const teacher = await this.access.getTeacherByUserId(userId);
-    await this.access.assertTeachesClass(teacher.id, classId);
+    await this.access.assertIsClassTeacher(teacher.id, classId);
     return this.students.create(schoolId, { ...dto, classId });
   }
 }

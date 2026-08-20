@@ -116,6 +116,8 @@ export interface SchoolClass {
   classTeacher?: { id: string; user: { id: string; name: string; email: string } } | null;
   classSubjects?: ClassSubject[];
   _count?: { students: number; classSubjects: number };
+  // set on the teacher-portal myClasses response: is the current teacher the class teacher?
+  isClassTeacher?: boolean;
 }
 
 export interface Student {

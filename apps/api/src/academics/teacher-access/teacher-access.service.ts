@@ -32,4 +32,18 @@ export class TeacherAccessService {
       throw new ForbiddenException('You do not teach this class');
     }
   }
+
+  /**
+   * Throws unless the teacher is the *class teacher* of the given class (not
+   * merely a subject teacher). Used for attendance and adding students, which
+   * are restricted to the class teacher.
+   */
+  async assertIsClassTeacher(teacherId: string, classId: string): Promise<void> {
+    const cls = await this.prisma.schoolClass.findFirst({
+      where: { id: classId, classTeacherId: teacherId },
+    });
+    if (!cls) {
+      throw new ForbiddenException('Only the class teacher can do this');
+    }
+  }
 }
