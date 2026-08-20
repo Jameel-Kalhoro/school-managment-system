@@ -2,6 +2,7 @@
 
 import { Role } from '@sms/shared';
 import type { ReactNode } from 'react';
+import { BillingGate } from '@/components/billing-gate';
 import { Shell } from '@/components/shell';
 import { useRequireRole } from '@/lib/auth';
 
@@ -16,7 +17,7 @@ export default function TeacherLayout({ children }: { children: ReactNode }) {
   const { allowed } = useRequireRole(Role.TEACHER);
   return (
     <Shell title="Teacher" nav={nav} ready={allowed}>
-      {allowed ? children : null}
+      {allowed ? <BillingGate>{children}</BillingGate> : null}
     </Shell>
   );
 }

@@ -8,6 +8,12 @@ export interface AppConfig {
     accessTtl: number;
     refreshTtl: number;
   };
+  billing: {
+    easypaisaAccount: string;
+    easypaisaTitle: string;
+    whatsappReceipt: string;
+    dueDaysBefore: number;
+  };
 }
 
 export function configuration(): AppConfig {
@@ -22,6 +28,13 @@ export function configuration(): AppConfig {
       refreshSecret: process.env.JWT_REFRESH_SECRET as string,
       accessTtl: Number(process.env.JWT_ACCESS_TTL ?? 900),
       refreshTtl: Number(process.env.JWT_REFRESH_TTL ?? 1209600),
+    },
+    // Manual billing display constants (no external API is called).
+    billing: {
+      easypaisaAccount: process.env.BILLING_EASYPAISA_ACCOUNT ?? '03476379869',
+      easypaisaTitle: process.env.BILLING_EASYPAISA_TITLE ?? 'Jameel Ahmed',
+      whatsappReceipt: process.env.BILLING_WHATSAPP_RECEIPT ?? '03108495112',
+      dueDaysBefore: Number(process.env.BILLING_DUE_DAYS_BEFORE ?? 5),
     },
   };
 }

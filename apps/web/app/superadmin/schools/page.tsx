@@ -72,6 +72,7 @@ export default function SchoolsPage() {
                 <Th>Plan</Th>
                 <Th>Users</Th>
                 <Th>Status</Th>
+                <Th>Billing</Th>
                 <Th>Actions</Th>
               </tr>
             </thead>
@@ -85,8 +86,18 @@ export default function SchoolsPage() {
                   <Td>{s.subscription?.plan?.name ?? '—'}</Td>
                   <Td>{s._count?.users ?? 0}</Td>
                   <Td><Badge>{s.status}</Badge></Td>
+                  <Td>{billingCell(s.subscription?.currentPeriodEnd)}</Td>
                   <Td>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="ghost"
+                        onClick={async () => {
+                          await platformApi.recordPayment(s.id);
+                          schools.reload();
+                        }}
+                      >
+                        Record payment
+                      </Button>
                       {s.status === 'ACTIVE' ? (
                         <Button
                           variant="danger"
@@ -119,7 +130,7 @@ export default function SchoolsPage() {
               ))}
               {schools.data?.data.length === 0 && (
                 <tr>
-                  <Td colSpan={5}>
+                  <Td colSpan={6}>
                     <span className="text-slate-400">No schools yet.</span>
                   </Td>
                 </tr>
@@ -274,6 +285,20 @@ function OnboardForm({
         </div>
       </form>
     </Card>
+  );
+}
+
+function billingCell(currentPeriodEnd?: string | null) {
+  if (!currentPeriodEnd) return <span className="text-slate-400">—</span>;
+  const due = new Date(currentPeriodEnd);
+  const days = Math.ceil((due.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  const label = days < 0 ? 'Overdue' : days <= 5 ? 'Due soon' : 'Paid';
+  const tone = days < 0 ? 'text-red-600' : days <= 5 ? 'text-amber-600' : 'text-emerald-600';
+  return (
+    <div>
+      <div className={`font-medium ${tone}`}>{label}</div>
+      <div className="text-xs text-slate-400">{currentPeriodEnd.slice(0, 10)}</div>
+    </div>
   );
 }
 

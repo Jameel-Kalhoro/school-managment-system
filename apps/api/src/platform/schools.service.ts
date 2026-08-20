@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@sms/database';
 import { Role, SchoolStatus, SubscriptionStatus } from '@sms/shared';
+import { addMonths } from '../common/billing/billing.util';
 import { generateTempPassword, hashPassword } from '../common/password.util';
 import {
   paginated,
@@ -13,6 +14,7 @@ import {
 } from '../common/dto/pagination.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { OnboardSchoolDto } from './dto/onboard-school.dto';
+import { RecordPaymentDto } from './dto/record-payment.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 
 @Injectable()
@@ -21,9 +23,10 @@ export class SchoolsService {
 
   /**
    * Onboards a school in a single transaction: creates the School, its
-   * Subscription (trialing — billing periods are set in Phase 3), and the
-   * first ADMIN user with a generated temp password. Runs as SUPER_ADMIN, so
-   * tenant scoping is bypassed and schoolId is set explicitly.
+   * Subscription (active, with the first monthly period so the first payment is
+   * due in a month), and the first ADMIN user with a generated temp password.
+   * Runs as SUPER_ADMIN, so tenant scoping is bypassed and schoolId is set
+   * explicitly.
    */
   async onboard(dto: OnboardSchoolDto) {
     const plan = await this.prisma.subscriptionPlan.findUnique({
@@ -48,11 +51,14 @@ export class SchoolsService {
           },
         });
 
+        const now = new Date();
         await tx.subscription.create({
           data: {
             schoolId: school.id,
             planId: plan.id,
-            status: SubscriptionStatus.TRIALING,
+            status: SubscriptionStatus.ACTIVE,
+            currentPeriodStart: now,
+            currentPeriodEnd: addMonths(now, 1),
           },
         });
 
@@ -109,6 +115,7 @@ export class SchoolsService {
       where: { id },
       include: {
         subscription: { include: { plan: true } },
+        payments: { orderBy: { paidAt: 'desc' }, take: 12 },
         _count: { select: { users: true, academicYears: true } },
       },
     });
@@ -126,6 +133,48 @@ export class SchoolsService {
   async setStatus(id: string, status: SchoolStatus) {
     await this.findOne(id);
     return this.prisma.school.update({ where: { id }, data: { status } });
+  }
+
+  /**
+   * Records a manual monthly payment: advances the subscription's paid-through
+   * date by a month, marks it ACTIVE, unlocks the school, and logs a Payment.
+   * If already ahead of now, extends from the current period end; otherwise
+   * from now (a lapsed school pays for a fresh month).
+   */
+  async recordPayment(id: string, recordedById: string, dto: RecordPaymentDto) {
+    const school = await this.findOne(id);
+    if (!school.subscription) {
+      throw new NotFoundException('School has no subscription');
+    }
+    const amountPkr = dto.amountPkr ?? school.subscription.plan.pricePkr;
+    const now = new Date();
+    const currentEnd = school.subscription.currentPeriodEnd;
+    const base = currentEnd && currentEnd > now ? currentEnd : now;
+    const newEnd = addMonths(base, 1);
+
+    await this.prisma.$transaction([
+      this.prisma.subscription.update({
+        where: { schoolId: id },
+        data: {
+          status: SubscriptionStatus.ACTIVE,
+          currentPeriodStart: now,
+          currentPeriodEnd: newEnd,
+        },
+      }),
+      this.prisma.school.update({ where: { id }, data: { status: SchoolStatus.ACTIVE } }),
+      this.prisma.payment.create({
+        data: {
+          schoolId: id,
+          amountPkr,
+          periodStart: base,
+          periodEnd: newEnd,
+          recordedById,
+          note: dto.note,
+        },
+      }),
+    ]);
+
+    return this.findOne(id);
   }
 
   /**

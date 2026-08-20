@@ -4,6 +4,7 @@ import type {
   Assignment,
   AttendanceRecord,
   AttendanceStatus,
+  BillingStatus,
   ClassSubject,
   CreateParentResult,
   CreateTeacherResult,
@@ -157,8 +158,14 @@ export const platformApi = {
   }) => apiFetch<OnboardResult>('/platform/schools', { method: 'POST', body }),
   setSchoolStatus: (id: string, status: string) =>
     apiFetch<School>(`/platform/schools/${id}/status`, { method: 'PATCH', body: { status } }),
+  recordPayment: (id: string, body: { amountPkr?: number; note?: string } = {}) =>
+    apiFetch<School>(`/platform/schools/${id}/record-payment`, { method: 'POST', body }),
   deleteSchool: (id: string) =>
     apiFetch<void>(`/platform/schools/${id}`, { method: 'DELETE' }),
+};
+
+export const billingApi = {
+  status: () => apiFetch<BillingStatus>('/billing'),
 };
 
 export const schoolApi = {
