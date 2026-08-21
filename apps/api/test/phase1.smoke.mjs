@@ -23,7 +23,7 @@ function check(label, cond, extra = '') {
 const login = (email, password) => req('POST', '/auth/login', { body: { email, password } });
 
 console.log('\n1. Super admin login');
-const sa = await login('superadmin@sms.local', 'ChangeMe123!');
+const sa = await login('jameelahmedkalhoro@gmail.com', 'Jameel@12345');
 check('super admin logs in', sa.status === 200, JSON.stringify(sa.json));
 const SA = sa.json.accessToken;
 
