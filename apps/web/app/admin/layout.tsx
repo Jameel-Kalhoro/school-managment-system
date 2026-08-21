@@ -2,6 +2,7 @@
 
 import { Role } from '@sms/shared';
 import type { ReactNode } from 'react';
+import { BillingGate } from '@/components/billing-gate';
 import { Shell } from '@/components/shell';
 import { useRequireRole } from '@/lib/auth';
 
@@ -24,7 +25,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { allowed } = useRequireRole(Role.ADMIN);
   return (
     <Shell title="School Admin" nav={nav} ready={allowed}>
-      {allowed ? children : null}
+      {allowed ? <BillingGate>{children}</BillingGate> : null}
     </Shell>
   );
 }

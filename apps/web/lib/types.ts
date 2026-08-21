@@ -22,6 +22,31 @@ export interface Plan {
 export interface Subscription {
   status: string;
   plan?: Plan;
+  currentPeriodEnd?: string | null;
+}
+
+export interface BillingStatus {
+  amountPkr: number;
+  dueDate: string | null;
+  daysUntilDue: number | null;
+  dueSoon: boolean;
+  overdue: boolean;
+  locked: boolean;
+  status: string | null;
+  payTo: {
+    easypaisaAccount: string;
+    easypaisaTitle: string;
+    whatsappReceipt: string;
+  };
+}
+
+export interface Payment {
+  id: string;
+  amountPkr: number;
+  periodStart: string;
+  periodEnd: string;
+  paidAt: string;
+  note: string | null;
 }
 
 export interface School {

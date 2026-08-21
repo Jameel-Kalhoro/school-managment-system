@@ -11,10 +11,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { Role } from '@sms/shared';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { ChangeSchoolStatusDto } from './dto/change-school-status.dto';
 import { OnboardSchoolDto } from './dto/onboard-school.dto';
+import { RecordPaymentDto } from './dto/record-payment.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { SchoolsService } from './schools.service';
 
@@ -47,6 +49,15 @@ export class SchoolsController {
   @Patch(':id/status')
   setStatus(@Param('id') id: string, @Body() dto: ChangeSchoolStatusDto) {
     return this.schools.setStatus(id, dto.status);
+  }
+
+  @Post(':id/record-payment')
+  recordPayment(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: RecordPaymentDto,
+  ) {
+    return this.schools.recordPayment(id, userId, dto);
   }
 
   @Delete(':id')

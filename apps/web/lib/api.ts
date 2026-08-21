@@ -4,6 +4,7 @@ import type {
   Assignment,
   AttendanceRecord,
   AttendanceStatus,
+  BillingStatus,
   ClassSubject,
   CreateParentResult,
   CreateTeacherResult,
@@ -146,6 +147,8 @@ export const platformApi = {
   }) => apiFetch<Plan>('/platform/plans', { method: 'POST', body }),
   setPlanStatus: (id: string, isActive: boolean) =>
     apiFetch<Plan>(`/platform/plans/${id}/status`, { method: 'PATCH', body: { isActive } }),
+  deletePlan: (id: string) =>
+    apiFetch<void>(`/platform/plans/${id}`, { method: 'DELETE' }),
 
   listSchools: (search?: string) =>
     apiFetch<Paginated<School>>('/platform/schools', { query: { search, pageSize: 100 } }),
@@ -157,8 +160,14 @@ export const platformApi = {
   }) => apiFetch<OnboardResult>('/platform/schools', { method: 'POST', body }),
   setSchoolStatus: (id: string, status: string) =>
     apiFetch<School>(`/platform/schools/${id}/status`, { method: 'PATCH', body: { status } }),
+  recordPayment: (id: string, body: { amountPkr?: number; note?: string } = {}) =>
+    apiFetch<School>(`/platform/schools/${id}/record-payment`, { method: 'POST', body }),
   deleteSchool: (id: string) =>
     apiFetch<void>(`/platform/schools/${id}`, { method: 'DELETE' }),
+};
+
+export const billingApi = {
+  status: () => apiFetch<BillingStatus>('/billing'),
 };
 
 export const schoolApi = {

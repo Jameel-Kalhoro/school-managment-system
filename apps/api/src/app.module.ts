@@ -18,9 +18,11 @@ import { AssignmentsModule } from './academics/assignments/assignments.module';
 import { GradesModule } from './academics/grades/grades.module';
 import { ParentsModule } from './parents/parents.module';
 import { ParentPortalModule } from './parent-portal/parent-portal.module';
+import { BillingModule } from './billing/billing.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { BillingGuard } from './common/guards/billing.guard';
 
 @Module({
   imports: [
@@ -53,12 +55,14 @@ import { RolesGuard } from './common/guards/roles.guard';
     GradesModule,
     ParentsModule,
     ParentPortalModule,
+    BillingModule,
     HealthModule,
   ],
   providers: [
-    // Order matters: authenticate first, then authorize by role.
+    // Order matters: authenticate, then authorize by role, then billing lock.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: BillingGuard },
   ],
 })
 export class AppModule {}

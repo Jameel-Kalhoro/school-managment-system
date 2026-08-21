@@ -20,6 +20,7 @@ export const TENANT_MODELS: readonly string[] = [
   'Assignment',
   'Grade',
   'ParentStudent',
+  'Payment',
 ];
 
 /**

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post } from '@nestjs/common';
 import type { AuthUser } from '@sms/shared';
+import { AllowWhenLocked } from '../common/decorators/allow-when-locked.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { AuthService } from './auth.service';
@@ -26,12 +27,14 @@ export class AuthController {
   }
 
   @Post('logout')
+  @AllowWhenLocked()
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@CurrentUser('id') userId: string): Promise<void> {
     await this.auth.logout(userId);
   }
 
   @Patch('password')
+  @AllowWhenLocked()
   @HttpCode(HttpStatus.NO_CONTENT)
   async changePassword(
     @CurrentUser('id') userId: string,
@@ -41,6 +44,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @AllowWhenLocked()
   me(@CurrentUser() user: AuthUser): AuthUser {
     return user;
   }

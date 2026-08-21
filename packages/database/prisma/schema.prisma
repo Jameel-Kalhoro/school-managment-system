@@ -101,6 +101,7 @@ model School {
   assignments   Assignment[]
   grades        Grade[]
   parentStudents ParentStudent[]
+  payments      Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -407,4 +408,26 @@ model ParentStudent {
   @@index([parentId])
   @@index([studentId])
   @@map("parent_students")
+}
+
+// ─── Billing (Phase 3 — manual) ──────────────────────────────
+
+// A recorded monthly payment. Created by the super admin when they confirm a
+// school's manual payment; extends the subscription's paid-through date.
+model Payment {
+  id           String   @id @default(cuid())
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  amountPkr    Int
+  periodStart  DateTime
+  periodEnd    DateTime
+  paidAt       DateTime @default(now())
+  // the super admin who recorded it (kept as history even if that user changes)
+  recordedById String?
+  note         String?
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+  @@map("payments")
 }

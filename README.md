@@ -41,7 +41,7 @@ Then:
 - Mailhog (dev mail) → http://localhost:8025
 - MinIO console → http://localhost:9001
 
-Default super admin (from `.env`): `superadmin@sms.local` / `ChangeMe123!`
+Default super admin (from `.env`): `jameelahmedkalhoro@gmail.com` / `Jameel@12345`
 
 ## Useful commands
 
@@ -76,7 +76,7 @@ Quick check:
 curl localhost:4000/api/health
 curl -sX POST localhost:4000/api/auth/login \
   -H 'content-type: application/json' \
-  -d '{"email":"superadmin@sms.local","password":"ChangeMe123!"}'
+  -d '{"email":"jameelahmedkalhoro@gmail.com","password":"Jameel@12345"}'
 ```
 
 Full Phase 1 flow (onboarding → temp-password login → users → academic years →

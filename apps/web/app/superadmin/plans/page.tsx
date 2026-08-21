@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { Alert, Badge, Button, Card, Field, Input, PageHeader, Spinner } from '@/components/ui';
 import { platformApi } from '@/lib/api';
+import type { Plan } from '@/lib/types';
 import { useAsync } from '@/lib/use-async';
 
 export default function PlansPage() {
   const plans = useAsync(() => platformApi.listPlans());
   const [showForm, setShowForm] = useState(false);
+  const [confirmPlan, setConfirmPlan] = useState<Plan | null>(null);
 
   return (
     <div>
@@ -46,22 +48,94 @@ export default function PlansPage() {
                     <Badge>{p.isActive ? 'ACTIVE' : 'INACTIVE'}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Button
-                      variant="ghost"
-                      onClick={async () => {
-                        await platformApi.setPlanStatus(p.id, !p.isActive);
-                        plans.reload();
-                      }}
-                    >
-                      {p.isActive ? 'Deactivate' : 'Activate'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        onClick={async () => {
+                          await platformApi.setPlanStatus(p.id, !p.isActive);
+                          plans.reload();
+                        }}
+                      >
+                        {p.isActive ? 'Deactivate' : 'Activate'}
+                      </Button>
+                      <Button variant="danger" onClick={() => setConfirmPlan(p)}>
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
+              {plans.data?.data.length === 0 && (
+                <tr><td className="px-4 py-3 text-slate-400" colSpan={5}>No plans yet.</td></tr>
+              )}
             </tbody>
           </table>
         </Card>
       )}
+
+      {confirmPlan && (
+        <DeletePlanDialog
+          plan={confirmPlan}
+          onClose={() => setConfirmPlan(null)}
+          onDeleted={() => { setConfirmPlan(null); plans.reload(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function DeletePlanDialog({
+  plan,
+  onClose,
+  onDeleted,
+}: {
+  plan: Plan;
+  onClose: () => void;
+  onDeleted: () => void;
+}) {
+  const [text, setText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const confirmed = text.trim() === plan.name.trim();
+
+  async function onDelete() {
+    setLoading(true);
+    setError(null);
+    try {
+      await platformApi.deletePlan(plan.id);
+      onDeleted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <Card className="w-full max-w-md">
+        <h2 className="text-lg font-semibold text-red-700">Delete {plan.name}?</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          This permanently removes the plan. A plan still assigned to any school cannot be
+          deleted — deactivate it instead.
+        </p>
+        <p className="mt-3 text-sm text-slate-600">
+          Type <span className="font-mono font-medium">{plan.name}</span> to confirm:
+        </p>
+        <Input
+          className="mt-1"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={plan.name}
+        />
+        {error && <div className="mt-3"><Alert>{error}</Alert></div>}
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose} disabled={loading}>Cancel</Button>
+          <Button variant="danger" onClick={onDelete} disabled={!confirmed || loading}>
+            {loading ? 'Deleting…' : 'Delete permanently'}
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }

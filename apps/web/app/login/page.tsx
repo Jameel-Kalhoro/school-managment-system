@@ -8,8 +8,8 @@ import { homeFor, useAuth } from '@/lib/auth';
 export default function LoginPage() {
   const { login, user, ready } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('superadmin@sms.local');
-  const [password, setPassword] = useState('ChangeMe123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
