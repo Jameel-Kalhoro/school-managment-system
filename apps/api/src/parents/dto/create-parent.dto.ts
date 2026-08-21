@@ -6,12 +6,14 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { NormalizeEmail } from '../../common/decorators/normalize-email.decorator';
 
 export class CreateParentDto {
   @IsString()
   @MinLength(2)
   name!: string;
 
+  @NormalizeEmail()
   @IsEmail()
   email!: string;
 

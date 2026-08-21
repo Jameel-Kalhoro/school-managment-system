@@ -4,7 +4,8 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.SUPER_ADMIN_EMAIL ?? 'superadmin@sms.local';
+  // Emails are stored canonicalized to lowercase across the app.
+  const email = (process.env.SUPER_ADMIN_EMAIL ?? 'superadmin@sms.local').trim().toLowerCase();
   const password = process.env.SUPER_ADMIN_PASSWORD ?? 'ChangeMe123!';
   const name = process.env.SUPER_ADMIN_NAME ?? 'Platform Owner';
 

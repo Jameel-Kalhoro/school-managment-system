@@ -96,7 +96,7 @@ function DeletePlanDialog({
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const confirmed = text === plan.name;
+  const confirmed = text.trim() === plan.name.trim();
 
   async function onDelete() {
     setLoading(true);

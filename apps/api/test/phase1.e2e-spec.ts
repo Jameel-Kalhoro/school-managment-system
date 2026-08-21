@@ -220,6 +220,33 @@ describe('Phase 1 — Platform & Tenancy (e2e)', () => {
     await request(http).get('/api/platform/schools').expect(401);
   });
 
+  it('treats emails case-insensitively (login + uniqueness)', async () => {
+    const mixed = `Case.Admin-${run}@Test.Local`;
+    const onboarded = await request(http)
+      .post('/api/platform/schools')
+      .set(auth(superToken))
+      .send({
+        school: { name: 'E2E Case', slug: `e2e-case-${run}` },
+        admin: { name: 'Case Admin', email: mixed },
+        planId,
+      })
+      .expect(201);
+    createdSchoolIds.push(onboarded.body.school.id);
+    // Stored canonicalized to lowercase.
+    expect(onboarded.body.admin.email).toBe(mixed.toLowerCase());
+
+    // Login succeeds with any casing of the same address.
+    await login(mixed.toLowerCase(), onboarded.body.tempPassword).expect(200);
+    const upper = await login(mixed.toUpperCase(), onboarded.body.tempPassword).expect(200);
+
+    // A case-only-different email collides with the existing admin.
+    await request(http)
+      .post('/api/users')
+      .set(auth(upper.body.accessToken))
+      .send({ name: 'Dup Admin', email: mixed.toUpperCase(), role: 'ADMIN' })
+      .expect(409);
+  });
+
   it('deletes a school (guarded by status + cascades data)', async () => {
     const created = await request(http)
       .post('/api/platform/schools')

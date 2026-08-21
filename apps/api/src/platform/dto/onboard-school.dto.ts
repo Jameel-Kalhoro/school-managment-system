@@ -7,6 +7,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { NormalizeEmail } from '../../common/decorators/normalize-email.decorator';
 
 class SchoolInfoDto {
   @IsString()
@@ -37,6 +38,7 @@ class SchoolAdminDto {
   @MinLength(2)
   name!: string;
 
+  @NormalizeEmail()
   @IsEmail()
   email!: string;
 

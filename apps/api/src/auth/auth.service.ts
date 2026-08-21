@@ -20,7 +20,10 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string): Promise<{ user: AuthUser } & TokenPair> {
-    const user = await this.prisma.user.findFirst({ where: { email } });
+    // Emails are stored canonicalized to lowercase — match case-insensitively.
+    const user = await this.prisma.user.findFirst({
+      where: { email: email.trim().toLowerCase() },
+    });
     if (!user || user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('Invalid credentials');
     }
