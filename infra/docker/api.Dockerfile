@@ -26,4 +26,6 @@ ENV NODE_ENV=production
 COPY --from=build /app ./
 WORKDIR /app/apps/api
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
+# Apply any pending migrations (idempotent) then boot. Array form so the host's
+# command field / shell quoting can't mangle it.
+CMD ["sh", "-c", "cd /app && pnpm --filter @sms/database exec prisma migrate deploy && cd /app/apps/api && node dist/main.js"]
