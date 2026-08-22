@@ -18,7 +18,8 @@ export interface AppConfig {
 
 export function configuration(): AppConfig {
   return {
-    port: Number(process.env.API_PORT ?? 4000),
+    // Hosts like Render/Railway inject PORT; fall back to API_PORT then 4000.
+    port: Number(process.env.PORT ?? process.env.API_PORT ?? 4000),
     globalPrefix: process.env.API_GLOBAL_PREFIX ?? 'api',
     corsOrigin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
       .split(',')

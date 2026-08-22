@@ -1,0 +1,16 @@
+# Keep the build context small and never bake local state/secrets into images.
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+.turbo
+.git
+.github
+# Local secrets — never copy into an image (.env.example is kept for reference)
+.env
+.env.*
+!.env.example
+# Misc
+*.log
+.DS_Store
