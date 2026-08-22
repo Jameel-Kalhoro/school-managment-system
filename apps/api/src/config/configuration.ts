@@ -21,9 +21,12 @@ export function configuration(): AppConfig {
     // Hosts like Render/Railway inject PORT; fall back to API_PORT then 4000.
     port: Number(process.env.PORT ?? process.env.API_PORT ?? 4000),
     globalPrefix: process.env.API_GLOBAL_PREFIX ?? 'api',
+    // Tolerate trailing slashes — browsers send the Origin without one, so a
+    // configured "https://app/" would otherwise never match.
     corsOrigin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
       .split(',')
-      .map((s) => s.trim()),
+      .map((s) => s.trim().replace(/\/+$/, ''))
+      .filter(Boolean),
     jwt: {
       accessSecret: process.env.JWT_ACCESS_SECRET as string,
       refreshSecret: process.env.JWT_REFRESH_SECRET as string,
