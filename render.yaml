@@ -1,0 +1,27 @@
+# Render Blueprint — NestJS API as a Docker web service.
+# Frontend (apps/web) is deployed separately on Vercel.
+services:
+  - type: web
+    name: sms-api
+    runtime: docker
+    dockerfilePath: ./infra/docker/api.Dockerfile
+    dockerContext: .
+    region: ohio # match Neon us-east-2 to minimise DB latency
+    plan: free
+    healthCheckPath: /api/health
+    # Free tier has no separate pre-deploy step, so apply migrations then boot.
+    # `migrate deploy` is idempotent (skips already-applied migrations).
+    dockerCommand: sh -c "cd /app && pnpm --filter @sms/database exec prisma migrate deploy && cd /app/apps/api && node dist/main.js"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Secrets — set these in the Render dashboard (never committed).
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      # Set to the Vercel domain once the frontend is deployed.
+      - key: CORS_ORIGIN
+        sync: false
