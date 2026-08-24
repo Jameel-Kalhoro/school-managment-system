@@ -12,6 +12,7 @@ const nav = [
   { href: '/admin/classes', label: 'Classes' },
   { href: '/admin/subjects', label: 'Subjects' },
   { href: '/admin/students', label: 'Students' },
+  { href: '/admin/student-import', label: 'Import Students' },
   { href: '/admin/attendance', label: 'Attendance' },
   { href: '/admin/assignments', label: 'Assignments' },
   { href: '/admin/grades', label: 'Grades' },

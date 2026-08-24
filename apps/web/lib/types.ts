@@ -223,3 +223,40 @@ export interface CreateParentResult {
   tempPassword: string;
 }
 
+// ─── CSV student import ─────────────────────────────────────
+export interface ImportStudentRow {
+  rollNo: string;
+  name: string;
+  guardianName: string;
+  guardianPhone?: string;
+  className: string;
+  section?: string;
+  gender?: string;
+}
+
+export interface ImportError {
+  row: number;
+  column: string;
+  message: string;
+}
+
+export interface ImportClassRef {
+  name: string;
+  section: string | null;
+}
+
+export interface ImportPreviewResult {
+  valid: boolean;
+  errors?: ImportError[];
+  summary?: {
+    studentsToCreate: number;
+    existingClasses: ImportClassRef[];
+    newClassesToCreate: ImportClassRef[];
+  };
+}
+
+export interface ImportCommitResult {
+  importedStudents: number;
+  createdClasses: number;
+}
+
