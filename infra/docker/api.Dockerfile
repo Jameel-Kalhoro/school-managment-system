@@ -23,9 +23,14 @@ RUN pnpm --filter @sms/database generate \
 # ── runtime ─────────────────────────────────────────────
 FROM base AS runtime
 ENV NODE_ENV=production
+# Cap V8's heap so the app + migrate fit Render's 512MB free instance (GC kicks
+# in before the container OOM-kills the process).
+ENV NODE_OPTIONS=--max-old-space-size=384
 COPY --from=build /app ./
 WORKDIR /app/apps/api
 EXPOSE 4000
-# Apply any pending migrations (idempotent) then boot. Array form so the host's
-# command field / shell quoting can't mangle it.
-CMD ["sh", "-c", "cd /app && pnpm --filter @sms/database exec prisma migrate deploy && cd /app/apps/api && node dist/main.js"]
+# Apply any pending migrations (idempotent) then boot. Invoke prisma's own bin
+# directly (not `pnpm exec`) so only ONE node process is alive during migrate —
+# `pnpm exec` keeps the pnpm resolver in memory alongside prisma, doubling the
+# startup footprint. Array form so the host's command field can't mangle it.
+CMD ["sh", "-c", "cd /app/packages/database && ./node_modules/.bin/prisma migrate deploy && cd /app/apps/api && node dist/main.js"]
