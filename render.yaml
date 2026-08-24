@@ -14,6 +14,10 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Keep V8's heap under Render's 512MB free-instance ceiling (mirrors the
+      # Dockerfile ENV; avoids OOM/137 on boot + migrate).
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384
       # Secrets — set these in the Render dashboard (never committed).
       - key: DATABASE_URL
         sync: false
