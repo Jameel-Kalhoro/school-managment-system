@@ -6,6 +6,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { AssignClassDto } from './dto/assign-class.dto';
 import { CreateStudentDto } from './dto/create-student.dto';
+import { ImportStudentsDto } from './dto/import-students.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { StudentsService } from './students.service';
 
@@ -23,6 +24,12 @@ export class StudentsController {
   @Post()
   create(@CurrentUser('schoolId') schoolId: string | null, @Body() dto: CreateStudentDto) {
     return this.students.create(schoolId, dto);
+  }
+
+  // Bulk CSV import — dryRun validates + previews, otherwise commits atomically.
+  @Post('import')
+  import(@CurrentUser('schoolId') schoolId: string | null, @Body() dto: ImportStudentsDto) {
+    return this.students.importStudents(schoolId, dto);
   }
 
   @Get()

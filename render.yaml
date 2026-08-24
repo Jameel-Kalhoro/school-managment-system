@@ -9,9 +9,8 @@ services:
     region: ohio # match Neon us-east-2 to minimise DB latency
     plan: free
     healthCheckPath: /api/health
-    # Free tier has no separate pre-deploy step, so apply migrations then boot.
-    # `migrate deploy` is idempotent (skips already-applied migrations).
-    dockerCommand: sh -c "cd /app && pnpm --filter @sms/database exec prisma migrate deploy && cd /app/apps/api && node dist/main.js"
+    # Start command lives in the Dockerfile CMD (migrate deploy -> boot), so no
+    # dockerCommand override is needed here (the field mangles shell quoting).
     envVars:
       - key: NODE_ENV
         value: production

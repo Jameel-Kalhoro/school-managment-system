@@ -11,6 +11,9 @@ import type {
   CreateUserResult,
   ExamType,
   Grade,
+  ImportCommitResult,
+  ImportPreviewResult,
+  ImportStudentRow,
   ManagedUser,
   Parent,
   ParentChild,
@@ -245,6 +248,18 @@ export const studentsApi = {
   assignClass: (id: string, classId: string | null) =>
     apiFetch<Student>(`/students/${id}/class`, { method: 'PATCH', body: { classId } }),
   remove: (id: string) => apiFetch<void>(`/students/${id}`, { method: 'DELETE' }),
+
+  // CSV bulk import — previewImport validates without writing; importStudents commits.
+  previewImport: (body: { academicYearId: string; rows: ImportStudentRow[] }) =>
+    apiFetch<ImportPreviewResult>('/students/import', {
+      method: 'POST',
+      body: { ...body, dryRun: true },
+    }),
+  importStudents: (body: { academicYearId: string; rows: ImportStudentRow[] }) =>
+    apiFetch<ImportCommitResult>('/students/import', {
+      method: 'POST',
+      body: { ...body, dryRun: false },
+    }),
 };
 
 export const teacherPortalApi = {
