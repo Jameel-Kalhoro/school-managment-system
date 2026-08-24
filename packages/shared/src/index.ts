@@ -68,6 +68,13 @@ export enum ExamType {
   ASSIGNMENT = 'ASSIGNMENT',
 }
 
+/**
+ * Max students accepted in a single CSV import. Keeps the whole-file, in-memory
+ * import safely within the API's memory budget on small instances. Shared so the
+ * client guard, server guard and user-facing message stay in sync.
+ */
+export const MAX_STUDENT_IMPORT_ROWS = 500;
+
 /** Roles that operate at the platform level (no school scope). */
 export const PLATFORM_ROLES: readonly Role[] = [Role.SUPER_ADMIN];
 

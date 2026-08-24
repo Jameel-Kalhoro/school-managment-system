@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Papa from 'papaparse';
+import { MAX_STUDENT_IMPORT_ROWS } from '@sms/shared';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Field, PageHeader, Select, Spinner } from '@/components/ui';
 import { schoolApi, studentsApi } from '@/lib/api';
@@ -65,6 +66,14 @@ export default function StudentImportPage() {
           section: (r.section ?? '').trim() || undefined,
           gender: (r.gender ?? '').trim() || undefined,
         }));
+        if (mapped.length > MAX_STUDENT_IMPORT_ROWS) {
+          setRows(null);
+          setPreview(null);
+          setError(
+            `Your file has ${mapped.length} students. Please split it into files of at most ${MAX_STUDENT_IMPORT_ROWS}.`,
+          );
+          return;
+        }
         setRows(mapped);
         if (yearId) void runPreview(mapped, yearId);
       },
@@ -116,9 +125,9 @@ export default function StudentImportPage() {
       <Card className="mb-4">
         <p className="mb-4 text-sm text-slate-600">
           Bulk-add students from a CSV file. Pick the academic year, download the template, fill in
-          one student per row (including their class and section), then upload it. Classes that
-          don&apos;t exist yet are created automatically. If any row has a problem, the whole file
-          is rejected and nothing is saved.
+          one student per row (including their class and section), then upload it — up to{' '}
+          {MAX_STUDENT_IMPORT_ROWS} students per file. Classes that don&apos;t exist yet are created
+          automatically. If any row has a problem, the whole file is rejected and nothing is saved.
         </p>
 
         {years.loading ? (
