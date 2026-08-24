@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Field, Input, PageHeader, Select, Spinner } from '@/components/ui';
 import { classesApi, studentsApi } from '@/lib/api';
 import type { SchoolClass } from '@/lib/types';
@@ -12,9 +12,20 @@ function classLabel(c: SchoolClass): string {
 
 export default function StudentsPage() {
   const [filterClass, setFilterClass] = useState('');
+  const [search, setSearch] = useState('');
+  const [debounced, setDebounced] = useState('');
+  // Debounce the search box so we don't hit the API on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(search.trim()), 300);
+    return () => clearTimeout(t);
+  }, [search]);
   const students = useAsync(
-    () => studentsApi.list(filterClass ? { classId: filterClass } : {}),
-    [filterClass],
+    () =>
+      studentsApi.list({
+        ...(filterClass ? { classId: filterClass } : {}),
+        ...(debounced ? { search: debounced } : {}),
+      }),
+    [filterClass, debounced],
   );
   const classes = useAsync(() => classesApi.list());
   const [showForm, setShowForm] = useState(false);
@@ -32,7 +43,14 @@ export default function StudentsPage() {
         <StudentForm classes={classOptions} onDone={() => { setShowForm(false); students.reload(); }} />
       )}
 
-      <div className="mb-4 max-w-xs">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:max-w-xl sm:grid-cols-2">
+        <Field label="Search">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Name, roll number or guardian"
+          />
+        </Field>
         <Field label="Filter by class">
           <Select value={filterClass} onChange={(e) => setFilterClass(e.target.value)}>
             <option value="">All classes</option>
@@ -97,7 +115,11 @@ export default function StudentsPage() {
                 </tr>
               ))}
               {students.data?.data.length === 0 && (
-                <tr><td className="px-4 py-3 text-slate-400" colSpan={6}>No students yet.</td></tr>
+                <tr>
+                  <td className="px-4 py-3 text-slate-400" colSpan={6}>
+                    {debounced || filterClass ? 'No students match your search.' : 'No students yet.'}
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
