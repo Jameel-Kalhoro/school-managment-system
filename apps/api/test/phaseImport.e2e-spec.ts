@@ -1,6 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { prisma, Role, UserStatus } from '@sms/database';
+import { MAX_STUDENT_IMPORT_ROWS } from '@sms/shared';
 import * as bcrypt from 'bcrypt';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
@@ -159,6 +160,19 @@ describe('Student CSV import (e2e)', () => {
 
     expect(await studentCount()).toBe(2); // unchanged
     expect(await classNames()).not.toContain('Grade 7-C'); // class creation rolled back
+  });
+
+  it('rejects a file over the row cap without writing anything', async () => {
+    const rows = Array.from({ length: MAX_STUDENT_IMPORT_ROWS + 1 }, (_, i) => ({
+      rollNo: `L${i}`,
+      name: 'Over Limit',
+      guardianName: 'Guardian',
+      className: 'Grade 5',
+      section: 'A',
+    }));
+    const res = await importReq({ academicYearId: ayId, dryRun: true, rows }).expect(400);
+    expect(res.body.message).toMatch(/at most/i);
+    expect(await studentCount()).toBe(2); // unchanged
   });
 
   it('create-only: an already-existing roll number is an error', async () => {

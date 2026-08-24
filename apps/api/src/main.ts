@@ -2,11 +2,16 @@ import 'reflect-metadata';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import type { AppConfig } from './config/configuration';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Explicit JSON body limit: large enough for a max-size CSV import (500 rows),
+  // small enough that an abusive upload is rejected with 413 before app logic.
+  // (Express's default is only 100 KB, which would 413 legitimate mid-size imports.)
+  app.useBodyParser('json', { limit: '2mb' });
   const config = app.get(ConfigService);
 
   const prefix = config.get<AppConfig['globalPrefix']>('globalPrefix') ?? 'api';
